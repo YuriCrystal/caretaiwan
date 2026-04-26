@@ -64,6 +64,16 @@ export default function AboutPage() {
           </ul>
         </Section>
 
+        <Section title="💾 備份你的資料">
+          <p className="mb-2">資料只存在你這支手機。為避免 iOS／瀏覽器清除，請定期備份：</p>
+          <Link
+            href="/backup"
+            className="inline-block px-4 h-11 leading-[2.75rem] bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl font-semibold"
+          >
+            前往備份頁
+          </Link>
+        </Section>
+
         <Section title="📮 回報問題">
           <p>用得不順、找不到功能、內容不正確，都歡迎回報給開發者修正。</p>
         </Section>

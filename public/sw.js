@@ -1,5 +1,5 @@
 // CareTaiwan Service Worker — v4 (network-first navigation 避免新部署後 HTML/chunk 失配)
-const CACHE_NAME = "caretaiwan-v5";
+const CACHE_NAME = "caretaiwan-v6";
 
 const STATIC_URLS = [
   "/",
@@ -8,6 +8,7 @@ const STATIC_URLS = [
   "/card",
   "/card/edit",
   "/about",
+  "/backup",
   "/manifest.json",
   "/icon-192.png",
   "/icon-512.png",

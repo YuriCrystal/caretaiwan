@@ -126,6 +126,57 @@ export function emptyElder(): Elder {
   };
 }
 
+// ----- Export / Import (保護資料，避免 iOS 清儲存或換手機後遺失) -----
+
+export function exportAllData(): string {
+  const store = getStore();
+  const records = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("records") || "[]");
+    } catch {
+      return [];
+    }
+  })();
+  return JSON.stringify(
+    {
+      version: 1,
+      exportedAt: Date.now(),
+      elderStore: store,
+      records,
+    },
+    null,
+    2
+  );
+}
+
+export function importAllData(json: string): {
+  ok: boolean;
+  message: string;
+  elderCount?: number;
+  recordCount?: number;
+} {
+  try {
+    const data = JSON.parse(json);
+    if (!data || typeof data !== "object") {
+      return { ok: false, message: "格式錯誤" };
+    }
+    if (data.elderStore && Array.isArray(data.elderStore.elders)) {
+      localStorage.setItem(KEY, JSON.stringify(data.elderStore));
+    }
+    if (Array.isArray(data.records)) {
+      localStorage.setItem("records", JSON.stringify(data.records));
+    }
+    return {
+      ok: true,
+      message: "匯入成功",
+      elderCount: data.elderStore?.elders?.length ?? 0,
+      recordCount: data.records?.length ?? 0,
+    };
+  } catch (e) {
+    return { ok: false, message: "JSON 解析失敗" };
+  }
+}
+
 export function calculateAge(birthday: string): number | null {
   if (!birthday) return null;
   const b = new Date(birthday);
