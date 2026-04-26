@@ -95,7 +95,9 @@ export default function CardPage() {
                         : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 active:bg-zinc-50 dark:active:bg-zinc-800"
                     }`}
                   >
-                    <span className="text-2xl">👴</span>
+                    <span className="text-2xl">
+                      {e.gender === "female" ? "👵" : e.gender === "male" ? "👴" : "🧓"}
+                    </span>
                     <div className="flex-1 text-left">
                       <div className="font-semibold">{e.name || "未命名"}</div>
                       <div className="text-xs text-zinc-500">
