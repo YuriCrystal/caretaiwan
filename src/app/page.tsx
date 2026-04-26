@@ -36,11 +36,18 @@ function formatRelative(ts: number): string {
 export default function Home() {
   const [query, setQuery] = useState("");
   const [recent, setRecent] = useState<Rec[]>([]);
+  const [todayCount, setTodayCount] = useState(0);
+  const [todayShared, setTodayShared] = useState(0);
 
   useEffect(() => {
     try {
       const all = JSON.parse(localStorage.getItem("records") || "[]") as Rec[];
       setRecent(all.slice(-3).reverse());
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const todays = all.filter((r) => r.timestamp >= startOfDay.getTime());
+      setTodayCount(todays.length);
+      setTodayShared(todays.filter((r) => r.shared).length);
     } catch {}
   }, []);
 
@@ -55,7 +62,16 @@ export default function Home() {
           <h1 className="text-2xl font-bold tracking-tight">看護助手</h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">CareTaiwan</p>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <Link
+            href="/about"
+            aria-label="關於"
+            className="w-11 h-11 flex items-center justify-center rounded-full text-xl active:bg-zinc-100 dark:active:bg-zinc-800"
+          >
+            ℹ️
+          </Link>
+          <ThemeToggle />
+        </div>
       </header>
 
       {/* Search */}
@@ -96,6 +112,29 @@ export default function Home() {
               </Link>
             ))
           )}
+        </div>
+      )}
+
+      {/* Today summary widget */}
+      {!showResults && todayCount > 0 && (
+        <div className="px-5 mb-3">
+          <Link
+            href="/record"
+            className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 rounded-2xl active:bg-emerald-100 dark:active:bg-emerald-900"
+          >
+            <span className="text-3xl">📊</span>
+            <div className="flex-1">
+              <div className="text-base font-bold text-emerald-900 dark:text-emerald-100">
+                今天已記錄 {todayCount} 筆
+              </div>
+              <div className="text-xs text-emerald-800 dark:text-emerald-200 mt-0.5">
+                {todayShared > 0
+                  ? `其中 ${todayShared} 筆已送給家屬`
+                  : "全部僅本地，未送給家屬"}
+              </div>
+            </div>
+            <span className="text-zinc-400">›</span>
+          </Link>
         </div>
       )}
 

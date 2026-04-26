@@ -30,6 +30,60 @@ export default function CardPage() {
     setShowSwitch(false);
   };
 
+  const buildCardText = (e: Elder): string => {
+    const lines: string[] = [];
+    lines.push(`【醫護卡 / ${e.name}】`);
+    const meta = [
+      e.gender === "male" ? "男" : e.gender === "female" ? "女" : null,
+      calculateAge(e.birthday) !== null ? `${calculateAge(e.birthday)} 歲` : null,
+      e.bloodType ? `${e.bloodType} 型` : null,
+    ]
+      .filter(Boolean)
+      .join(" / ");
+    if (meta) lines.push(meta);
+    if (e.allergies) lines.push(`\n⚠️ 過敏：\n${e.allergies}`);
+    if (e.medications.length > 0) {
+      lines.push(`\n💊 慣用藥：`);
+      e.medications.forEach((m) =>
+        lines.push(`・${m.name}　${m.dose}　${m.time}`)
+      );
+    }
+    if (e.history) lines.push(`\n📋 病史：\n${e.history}`);
+    if (e.doctor || e.hospital) {
+      lines.push(`\n🏥 主治醫療：`);
+      if (e.doctor) lines.push(`醫師：${e.doctor}`);
+      if (e.hospital) lines.push(`醫院：${e.hospital}`);
+    }
+    if (e.contacts.length > 0) {
+      lines.push(`\n📞 緊急聯絡人：`);
+      e.contacts.forEach((c) =>
+        lines.push(`・${c.name}（${c.relation}）${c.phone}`)
+      );
+    }
+    return lines.join("\n");
+  };
+
+  const handleShare = async () => {
+    if (!elder) return;
+    const text = buildCardText(elder);
+    // Try Web Share API (mobile native sheet)
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `醫護卡 / ${elder.name}`, text });
+        return;
+      } catch {
+        // user cancelled or share failed → fallback
+      }
+    }
+    // Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("已複製到剪貼簿，可貼到 LINE / 簡訊");
+    } catch {
+      alert("複製失敗");
+    }
+  };
+
   if (!loaded) {
     return <main className="flex flex-col flex-1 pb-32" />;
   }
@@ -220,12 +274,21 @@ export default function CardPage() {
           </Section>
         )}
 
-        <Link
-          href={`/card/edit?id=${elder.id}`}
-          className="block text-center py-3 text-sm text-zinc-500 dark:text-zinc-400 active:text-zinc-700 dark:active:text-zinc-200"
-        >
-          ✏️ 編輯這位的檔案
-        </Link>
+        {/* Share + edit */}
+        <div className="grid grid-cols-2 gap-2 pt-2">
+          <button
+            onClick={handleShare}
+            className="h-12 bg-emerald-600 active:bg-emerald-700 text-white rounded-xl font-semibold"
+          >
+            📤 分享給家屬
+          </button>
+          <Link
+            href={`/card/edit?id=${elder.id}`}
+            className="h-12 leading-[3rem] text-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl font-semibold active:bg-zinc-50 dark:active:bg-zinc-800"
+          >
+            ✏️ 編輯
+          </Link>
+        </div>
       </div>
     </main>
   );

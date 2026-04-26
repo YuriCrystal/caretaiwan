@@ -36,7 +36,7 @@ export const UNIVERSAL_PHRASES: Phrase[] = [
   },
 ];
 
-// 紅燈情境的就醫一句話描述
+// 情境的就醫／通知家屬一句話描述（紅燈 + 部分橘綠燈）
 export const SCENARIO_PHRASES: Record<string, Phrase> = {
   "01": {
     zh: "他剛剛跌倒了，可能受傷。",
@@ -151,5 +151,66 @@ export const SCENARIO_PHRASES: Record<string, Phrase> = {
     en: "He suddenly can't swallow saliva. Possible stroke.",
     id: "Dia tiba-tiba tidak bisa menelan ludah. Mungkin stroke.",
     vi: "Bà ấy đột nhiên không nuốt được nước bọt. Có thể bị đột quỵ.",
+  },
+  // ----- 橘燈與部分綠燈 -----
+  "11": {
+    zh: "他發燒超過 38.5 度。",
+    en: "He has a fever over 38.5°C (101.3°F).",
+    id: "Dia demam di atas 38.5°C.",
+    vi: "Bà ấy sốt trên 38.5°C.",
+  },
+  "14": {
+    zh: "他血壓偏低（低於 90/60）、頭暈。",
+    en: "His blood pressure is low (below 90/60) and he feels dizzy.",
+    id: "Tekanan darahnya rendah (di bawah 90/60) dan dia pusing.",
+    vi: "Huyết áp thấp (dưới 90/60) và bà ấy chóng mặt.",
+  },
+  "18": {
+    zh: "他喉嚨有痰音、咳不出來。",
+    en: "He has phlegm in his throat and can't cough it out.",
+    id: "Ada dahak di tenggorokannya dan tidak bisa dibatukkan keluar.",
+    vi: "Có đờm trong cổ họng và bà ấy không khạc ra được.",
+  },
+  "20": {
+    zh: "他吃完藥後就吐了。",
+    en: "He vomited shortly after taking medication.",
+    id: "Dia muntah segera setelah minum obat.",
+    vi: "Bà ấy nôn ra ngay sau khi uống thuốc.",
+  },
+  "27": {
+    zh: "他屁股出現紅斑，可能是褥瘡前兆。",
+    en: "He has redness on his bottom — possible early bedsore.",
+    id: "Ada kemerahan di pantatnya, mungkin tanda awal luka baring.",
+    vi: "Có vết đỏ ở mông, có thể là dấu hiệu sớm của loét tì đè.",
+  },
+  "30": {
+    zh: "他的尿管阻塞或漏尿。",
+    en: "His urinary catheter is blocked or leaking.",
+    id: "Kateter kemihnya tersumbat atau bocor.",
+    vi: "Ống thông tiểu của bà ấy bị tắc hoặc rò rỉ.",
+  },
+  "39": {
+    zh: "他突然躁動、想打人（失智症狀）。",
+    en: "He's suddenly agitated and aggressive (dementia symptom).",
+    id: "Dia tiba-tiba gelisah dan ingin memukul (gejala demensia).",
+    vi: "Bà ấy đột nhiên kích động, muốn đánh người (triệu chứng sa sút trí tuệ).",
+  },
+  "42": {
+    zh: "他吃飯時一直嗆咳。",
+    en: "He keeps choking while eating.",
+    id: "Dia terus tersedak saat makan.",
+    vi: "Bà ấy liên tục bị sặc khi ăn.",
+  },
+  "45": {
+    zh: "他拉肚子超過一天。",
+    en: "He has had diarrhea for over a day.",
+    id: "Dia mengalami diare lebih dari satu hari.",
+    vi: "Bà ấy bị tiêu chảy hơn một ngày.",
+  },
+  "46": {
+    zh: "他一天嘔吐 3 次以上。",
+    en: "He has vomited more than 3 times today.",
+    id: "Dia muntah lebih dari 3 kali hari ini.",
+    vi: "Bà ấy đã nôn hơn 3 lần trong hôm nay.",
   },
 };

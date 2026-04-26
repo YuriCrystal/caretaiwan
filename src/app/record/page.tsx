@@ -33,13 +33,29 @@ export default function RecordPage() {
   const [tempValue, setTempValue] = useState("");
   const [note, setNote] = useState("");
   const [recordCount, setRecordCount] = useState(0);
+  const [recentHourCount, setRecentHourCount] = useState(0);
+  const [recentItems, setRecentItems] = useState<{ icon: string; label: string; ts: number }[]>([]);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [clearedCount, setClearedCount] = useState<number | null>(null);
   const confirmRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const all = JSON.parse(localStorage.getItem("records") || "[]");
+    type R = { type: RecordType; timestamp: number };
+    const all = JSON.parse(localStorage.getItem("records") || "[]") as R[];
     setRecordCount(all.length);
+    const cutoff = Date.now() - 60 * 60 * 1000;
+    const lastHour = all.filter((r) => r.timestamp >= cutoff);
+    setRecentHourCount(lastHour.length);
+    setRecentItems(
+      lastHour
+        .slice(-5)
+        .reverse()
+        .map((r) => ({
+          icon: ITEMS.find((it) => it.id === r.type)?.icon ?? "📝",
+          label: ITEMS.find((it) => it.id === r.type)?.label ?? "",
+          ts: r.timestamp,
+        }))
+    );
   }, [stage, showClearConfirm]);
 
   // Scroll confirm dialog into view when it opens
@@ -279,6 +295,23 @@ export default function RecordPage() {
           <p className="text-xs text-zinc-500">{today}</p>
         </div>
       </header>
+
+      {/* Last 1hr quick view */}
+      {recentHourCount > 0 && (
+        <div className="px-5 pt-4">
+          <div className="p-3 bg-zinc-100 dark:bg-zinc-900 rounded-xl flex items-center gap-2">
+            <span className="text-xs text-zinc-500 mr-1">最近 1 小時：</span>
+            <span className="text-sm font-bold">{recentHourCount} 筆</span>
+            <div className="flex gap-1 ml-auto">
+              {recentItems.map((r, i) => (
+                <span key={i} title={r.label} className="text-lg">
+                  {r.icon}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="px-5 pt-5">
         <h2 className="text-sm font-semibold text-zinc-500 mb-3">記錄什麼？</h2>
