@@ -2,26 +2,43 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getElder, calculateAge, type Elder } from "@/lib/elder";
+import {
+  getStore,
+  setActiveElder,
+  calculateAge,
+  type Elder,
+} from "@/lib/elder";
 
 export default function CardPage() {
-  const [elder, setElder] = useState<Elder | null>(null);
+  const [elders, setElders] = useState<Elder[]>([]);
+  const [activeId, setActiveId] = useState<string>("");
   const [loaded, setLoaded] = useState(false);
+  const [showSwitch, setShowSwitch] = useState(false);
 
   useEffect(() => {
-    setElder(getElder());
+    const s = getStore();
+    setElders(s.elders);
+    setActiveId(s.activeId || s.elders[0]?.id || "");
     setLoaded(true);
   }, []);
+
+  const elder = elders.find((e) => e.id === activeId) ?? elders[0] ?? null;
+
+  const handleSwitch = (id: string) => {
+    setActiveId(id);
+    setActiveElder(id);
+    setShowSwitch(false);
+  };
 
   if (!loaded) {
     return <main className="flex flex-col flex-1 pb-32" />;
   }
 
-  // No data: prompt to create
-  if (!elder || !elder.name) {
+  // Empty state
+  if (elders.length === 0) {
     return (
       <main className="flex flex-col flex-1 pb-32">
-        <Header />
+        <Header elderCount={0} />
         <div className="px-5 pt-8">
           <div className="p-8 bg-white dark:bg-zinc-900 rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 text-center">
             <div className="text-5xl mb-3">🆔</div>
@@ -30,7 +47,7 @@ export default function CardPage() {
               填寫後，這張卡片可在就醫時直接給醫護看
             </p>
             <Link
-              href="/card/edit"
+              href="/card/edit?id=new"
               className="inline-block px-6 h-12 leading-[3rem] bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-2xl font-bold"
             >
               建立檔案
@@ -41,18 +58,89 @@ export default function CardPage() {
     );
   }
 
+  if (!elder) {
+    return null;
+  }
+
   const age = calculateAge(elder.birthday);
-  const genderLabel = elder.gender === "male" ? "男" : elder.gender === "female" ? "女" : "";
+  const genderLabel =
+    elder.gender === "male" ? "男" : elder.gender === "female" ? "女" : "";
 
   return (
     <main className="flex flex-col flex-1 pb-32">
-      <Header />
+      <Header elderCount={elders.length} onSwitch={() => setShowSwitch(true)} />
+
+      {/* Switch sheet */}
+      {showSwitch && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 flex items-end justify-center"
+          onClick={() => setShowSwitch(false)}
+        >
+          <div
+            className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-t-3xl p-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mb-4" />
+            <h2 className="text-lg font-bold mb-3">切換老人</h2>
+            <div className="space-y-2">
+              {elders.map((e) => {
+                const active = e.id === activeId;
+                return (
+                  <button
+                    key={e.id}
+                    onClick={() => handleSwitch(e.id)}
+                    className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 ${
+                      active
+                        ? "border-zinc-900 dark:border-zinc-100 bg-zinc-100 dark:bg-zinc-800"
+                        : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 active:bg-zinc-50 dark:active:bg-zinc-800"
+                    }`}
+                  >
+                    <span className="text-2xl">👴</span>
+                    <div className="flex-1 text-left">
+                      <div className="font-semibold">{e.name || "未命名"}</div>
+                      <div className="text-xs text-zinc-500">
+                        {[
+                          e.gender === "male" ? "男" : e.gender === "female" ? "女" : null,
+                          calculateAge(e.birthday) !== null
+                            ? `${calculateAge(e.birthday)} 歲`
+                            : null,
+                          e.bloodType ? `${e.bloodType} 型` : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" ・ ") || "—"}
+                      </div>
+                    </div>
+                    {active && (
+                      <span className="text-xs px-2 py-0.5 bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 rounded-full">
+                        目前
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+              <Link
+                href="/card/edit?id=new"
+                className="w-full flex items-center justify-center gap-2 p-4 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl text-zinc-600 dark:text-zinc-400 font-semibold active:bg-zinc-50 dark:active:bg-zinc-800"
+              >
+                + 新增另一位
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="px-5 pt-4 space-y-4">
         {/* Header card: name + key info */}
         <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border-2 border-zinc-900 dark:border-zinc-100 shadow-sm">
-          <div className="text-xs text-zinc-500 mb-1">受照顧者 / Patient</div>
-          <div className="text-3xl font-bold tracking-tight">{elder.name}</div>
+          <div className="flex items-center justify-between">
+            <div className="text-xs text-zinc-500">受照顧者 / Patient</div>
+            {elders.length > 1 && (
+              <div className="text-xs text-zinc-500">
+                {elders.findIndex((e) => e.id === elder.id) + 1} / {elders.length}
+              </div>
+            )}
+          </div>
+          <div className="text-3xl font-bold tracking-tight mt-1">{elder.name}</div>
           <div className="flex items-center gap-3 mt-2 text-base text-zinc-700 dark:text-zinc-300">
             {genderLabel && <span>{genderLabel}</span>}
             {age !== null && <span>{age} 歲</span>}
@@ -64,14 +152,12 @@ export default function CardPage() {
           </div>
         </div>
 
-        {/* Allergies — most critical */}
         {elder.allergies && (
           <Section title="⚠️ 過敏" emphasis>
             <p className="text-base whitespace-pre-wrap leading-relaxed">{elder.allergies}</p>
           </Section>
         )}
 
-        {/* Medications */}
         {elder.medications.length > 0 && (
           <Section title="💊 慣用藥">
             <ul className="space-y-2">
@@ -87,14 +173,12 @@ export default function CardPage() {
           </Section>
         )}
 
-        {/* History */}
         {elder.history && (
           <Section title="📋 病史">
             <p className="text-base whitespace-pre-wrap leading-relaxed">{elder.history}</p>
           </Section>
         )}
 
-        {/* Doctor / Hospital */}
         {(elder.doctor || elder.hospital) && (
           <Section title="🏥 主治醫療">
             {elder.doctor && (
@@ -112,7 +196,6 @@ export default function CardPage() {
           </Section>
         )}
 
-        {/* Contacts */}
         {elder.contacts.length > 0 && (
           <Section title="📞 緊急聯絡人">
             <div className="space-y-2">
@@ -135,19 +218,24 @@ export default function CardPage() {
           </Section>
         )}
 
-        {/* Edit button */}
         <Link
-          href="/card/edit"
+          href={`/card/edit?id=${elder.id}`}
           className="block text-center py-3 text-sm text-zinc-500 dark:text-zinc-400 active:text-zinc-700 dark:active:text-zinc-200"
         >
-          ✏️ 編輯檔案
+          ✏️ 編輯這位的檔案
         </Link>
       </div>
     </main>
   );
 }
 
-function Header() {
+function Header({
+  elderCount,
+  onSwitch,
+}: {
+  elderCount: number;
+  onSwitch?: () => void;
+}) {
   return (
     <header className="px-5 pt-4 pb-3 flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-800">
       <Link
@@ -156,7 +244,23 @@ function Header() {
       >
         ←
       </Link>
-      <h1 className="text-xl font-bold">🆔 醫護卡</h1>
+      <h1 className="text-xl font-bold flex-1">🆔 醫護卡</h1>
+      {elderCount > 1 && onSwitch && (
+        <button
+          onClick={onSwitch}
+          className="px-3 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 text-sm font-semibold active:bg-zinc-200 dark:active:bg-zinc-700"
+        >
+          ⇆ 切換 ({elderCount})
+        </button>
+      )}
+      {elderCount === 1 && (
+        <Link
+          href="/card/edit?id=new"
+          className="px-3 h-10 leading-10 rounded-full bg-zinc-100 dark:bg-zinc-800 text-sm font-semibold active:bg-zinc-200 dark:active:bg-zinc-700"
+        >
+          + 新增
+        </Link>
+      )}
     </header>
   );
 }

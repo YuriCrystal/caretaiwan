@@ -104,6 +104,12 @@ export const SCENARIO_PHRASES: Record<string, Phrase> = {
     id: "Suhu tubuhnya terlalu rendah. Mungkin hipotermia.",
     vi: "Nhiệt độ cơ thể quá thấp. Có thể bị hạ thân nhiệt.",
   },
+  "13": {
+    zh: "他血壓太高（超過 180/110），有頭痛／視力模糊／胸痛。",
+    en: "His blood pressure is too high (over 180/110), with headache / blurred vision / chest pain.",
+    id: "Tekanan darahnya terlalu tinggi (di atas 180/110), disertai sakit kepala / penglihatan kabur / nyeri dada.",
+    vi: "Huyết áp quá cao (trên 180/110), kèm đau đầu / mờ mắt / đau ngực.",
+  },
   "15": {
     zh: "他血糖太低（< 70），快不行了。",
     en: "His blood sugar is too low (below 70). It's an emergency.",

@@ -1,53 +1,117 @@
-// 老人健康檔案（模組 C）— Phase 1 localStorage 版
-// Phase 2 將接 Supabase 雲端同步
+// 老人健康檔案（模組 C）— 支援多位老人
 
 export type Medication = {
-  name: string;       // 藥名
-  dose: string;       // 劑量（例：1 顆 / 5mg）
-  time: string;       // 時間（例：早餐後 / 三餐＋睡前）
+  name: string;
+  dose: string;
+  time: string;
 };
 
 export type Contact = {
   name: string;
-  relation: string;   // 與老人關係（例：女兒 / 兒子）
+  relation: string;
   phone: string;
 };
 
 export type Elder = {
-  name: string;          // 中文姓名
+  id: string;
+  name: string;
   gender: "male" | "female" | "";
-  birthday: string;      // YYYY-MM-DD
-  bloodType: string;     // A / B / O / AB / 不確定
-  history: string;       // 病史（多行）
-  allergies: string;     // 過敏（多行）
+  birthday: string;
+  bloodType: string;
+  history: string;
+  allergies: string;
   medications: Medication[];
-  doctor: string;        // 主治醫師
-  hospital: string;      // 主要就醫醫院
-  contacts: Contact[];   // 緊急聯絡人（家屬）
+  doctor: string;
+  hospital: string;
+  contacts: Contact[];
   updatedAt: number;
 };
 
-const KEY = "elder";
+type Store = {
+  elders: Elder[];
+  activeId: string;
+};
 
-export function getElder(): Elder | null {
+const KEY = "elderStore";
+const LEGACY_KEY = "elder"; // single-elder format from earlier version
+
+export function genId(): string {
+  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+}
+
+function migrateLegacy(): Store | null {
   if (typeof window === "undefined") return null;
+  const legacy = localStorage.getItem(LEGACY_KEY);
+  if (!legacy) return null;
+  try {
+    const parsed = JSON.parse(legacy);
+    if (parsed && parsed.name) {
+      const elder: Elder = { ...parsed, id: genId() };
+      const store: Store = { elders: [elder], activeId: elder.id };
+      localStorage.setItem(KEY, JSON.stringify(store));
+      localStorage.removeItem(LEGACY_KEY);
+      return store;
+    }
+  } catch {}
+  return null;
+}
+
+export function getStore(): Store {
+  if (typeof window === "undefined") return { elders: [], activeId: "" };
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as Elder;
-  } catch {
-    return null;
+    if (raw) return JSON.parse(raw) as Store;
+  } catch {}
+  const migrated = migrateLegacy();
+  if (migrated) return migrated;
+  return { elders: [], activeId: "" };
+}
+
+export function saveStore(store: Store) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(KEY, JSON.stringify(store));
+}
+
+export function getActiveElder(): Elder | null {
+  const s = getStore();
+  return s.elders.find((e) => e.id === s.activeId) ?? s.elders[0] ?? null;
+}
+
+export function getElderById(id: string): Elder | null {
+  return getStore().elders.find((e) => e.id === id) ?? null;
+}
+
+export function setActiveElder(id: string) {
+  const s = getStore();
+  if (s.elders.find((e) => e.id === id)) {
+    s.activeId = id;
+    saveStore(s);
   }
 }
 
-export function saveElder(elder: Elder) {
-  if (typeof window === "undefined") return;
+export function upsertElder(elder: Elder): Store {
+  const s = getStore();
   elder.updatedAt = Date.now();
-  localStorage.setItem(KEY, JSON.stringify(elder));
+  if (!elder.id) elder.id = genId();
+  const idx = s.elders.findIndex((e) => e.id === elder.id);
+  if (idx >= 0) s.elders[idx] = elder;
+  else s.elders.push(elder);
+  if (!s.activeId) s.activeId = elder.id;
+  saveStore(s);
+  return s;
+}
+
+export function deleteElder(id: string): Store {
+  const s = getStore();
+  s.elders = s.elders.filter((e) => e.id !== id);
+  if (s.activeId === id) s.activeId = s.elders[0]?.id ?? "";
+  saveStore(s);
+  return s;
 }
 
 export function emptyElder(): Elder {
   return {
+    id: "",
     name: "",
     gender: "",
     birthday: "",

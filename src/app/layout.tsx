@@ -16,6 +16,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   themeColor: "#0f172a",
+  viewportFit: "cover", // iOS Dynamic Island / notch safe area
 };
 
 export default function RootLayout({
@@ -34,7 +35,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 font-sans">
-        <div className="mx-auto w-full max-w-md min-h-screen flex flex-col">
+        <div className="mx-auto w-full max-w-md min-h-screen flex flex-col pt-[env(safe-area-inset-top)]">
           {children}
         </div>
         <BottomNav />

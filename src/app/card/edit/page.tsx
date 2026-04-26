@@ -1,27 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
-  getElder,
-  saveElder,
+  getElderById,
+  upsertElder,
+  deleteElder,
   emptyElder,
+  setActiveElder,
   type Elder,
   type Medication,
   type Contact,
 } from "@/lib/elder";
 
-export default function EditElderPage() {
+function EditElderInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id") ?? "new";
   const [elder, setElder] = useState<Elder>(emptyElder());
   const [loaded, setLoaded] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
-    const existing = getElder();
-    if (existing) setElder(existing);
+    if (id !== "new") {
+      const e = getElderById(id);
+      if (e) setElder(e);
+    }
     setLoaded(true);
-  }, []);
+  }, [id]);
 
   const update = <K extends keyof Elder>(k: K, v: Elder[K]) =>
     setElder((e) => ({ ...e, [k]: v }));
@@ -47,7 +54,13 @@ export default function EditElderPage() {
     update("contacts", elder.contacts.filter((_, idx) => idx !== i));
 
   const handleSave = () => {
-    saveElder(elder);
+    const saved = upsertElder(elder);
+    setActiveElder(saved.elders[saved.elders.length - 1].id);
+    router.push("/card");
+  };
+
+  const handleDelete = () => {
+    if (id !== "new") deleteElder(id);
     router.push("/card");
   };
 
@@ -64,11 +77,12 @@ export default function EditElderPage() {
         >
           ←
         </Link>
-        <h1 className="text-xl font-bold">✏️ 編輯老人檔案</h1>
+        <h1 className="text-xl font-bold">
+          {id === "new" ? "➕ 新增老人" : "✏️ 編輯檔案"}
+        </h1>
       </header>
 
       <div className="px-5 pt-4 space-y-5">
-        {/* Basic */}
         <FormSection title="基本資料">
           <Field label="姓名" required>
             <input
@@ -116,44 +130,39 @@ export default function EditElderPage() {
           </Field>
         </FormSection>
 
-        {/* Health */}
         <FormSection title="健康狀況">
           <Field label="過敏（藥物／食物／其他）">
             <textarea
               value={elder.allergies}
               onChange={(e) => update("allergies", e.target.value)}
-              placeholder="例：青黴素、海鮮"
+              placeholder="例:青黴素、海鮮"
               rows={2}
-              className={inputCls + " resize-none"}
+              className={inputCls + " resize-none py-2"}
             />
           </Field>
           <Field label="病史">
             <textarea
               value={elder.history}
               onChange={(e) => update("history", e.target.value)}
-              placeholder="例：高血壓 10 年、糖尿病 5 年、輕度失智"
+              placeholder="例:高血壓、糖尿病、輕度失智"
               rows={3}
-              className={inputCls + " resize-none"}
+              className={inputCls + " resize-none py-2"}
             />
           </Field>
         </FormSection>
 
-        {/* Medications */}
         <FormSection title="慣用藥">
           {elder.medications.length === 0 && (
             <p className="text-sm text-zinc-500 mb-2">尚未新增</p>
           )}
           <div className="space-y-3">
             {elder.medications.map((m, i) => (
-              <div
-                key={i}
-                className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl space-y-2"
-              >
+              <div key={i} className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl space-y-2">
                 <input
                   type="text"
                   value={m.name}
                   onChange={(e) => updateMed(i, "name", e.target.value)}
-                  placeholder="藥名（如：脈優錠）"
+                  placeholder="藥名（如:脈優錠）"
                   className={inputCls}
                 />
                 <div className="grid grid-cols-2 gap-2">
@@ -189,14 +198,13 @@ export default function EditElderPage() {
           </button>
         </FormSection>
 
-        {/* Doctor / Hospital */}
         <FormSection title="主治醫療">
           <Field label="主治醫師">
             <input
               type="text"
               value={elder.doctor}
               onChange={(e) => update("doctor", e.target.value)}
-              placeholder="例：陳醫師（內科）"
+              placeholder="例:陳醫師（內科）"
               className={inputCls}
             />
           </Field>
@@ -205,23 +213,19 @@ export default function EditElderPage() {
               type="text"
               value={elder.hospital}
               onChange={(e) => update("hospital", e.target.value)}
-              placeholder="例：台北榮總"
+              placeholder="例:台北榮總"
               className={inputCls}
             />
           </Field>
         </FormSection>
 
-        {/* Contacts */}
         <FormSection title="緊急聯絡人">
           {elder.contacts.length === 0 && (
             <p className="text-sm text-zinc-500 mb-2">尚未新增</p>
           )}
           <div className="space-y-3">
             {elder.contacts.map((c, i) => (
-              <div
-                key={i}
-                className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl space-y-2"
-              >
+              <div key={i} className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="text"
@@ -275,6 +279,43 @@ export default function EditElderPage() {
             <p className="text-xs text-zinc-500 text-center">請先填姓名</p>
           )}
         </div>
+
+        {/* Delete (existing only) */}
+        {id !== "new" && (
+          <div className="pt-4">
+            {!confirmDelete ? (
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="w-full h-12 border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 rounded-xl font-semibold active:bg-red-50 dark:active:bg-red-950"
+              >
+                🗑️ 刪除此筆檔案
+              </button>
+            ) : (
+              <div className="p-4 bg-red-50 dark:bg-red-950 border border-red-300 dark:border-red-800 rounded-xl">
+                <p className="font-semibold text-red-900 dark:text-red-100">
+                  確定刪除「{elder.name || "這位"}」？
+                </p>
+                <p className="text-xs text-red-800 dark:text-red-200 mt-1">
+                  刪除後無法復原（本地資料）
+                </p>
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={() => setConfirmDelete(false)}
+                    className="flex-1 h-12 bg-white dark:bg-zinc-900 rounded-xl font-semibold border border-zinc-200 dark:border-zinc-800"
+                  >
+                    取消
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="flex-1 h-12 bg-red-600 active:bg-red-700 text-white rounded-xl font-semibold"
+                  >
+                    確定刪除
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </main>
   );
@@ -286,9 +327,7 @@ const inputCls =
 function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-      <h2 className="text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-3">
-        {title}
-      </h2>
+      <h2 className="text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-3">{title}</h2>
       <div className="space-y-3">{children}</div>
     </section>
   );
@@ -311,5 +350,13 @@ function Field({
       </label>
       {children}
     </div>
+  );
+}
+
+export default function EditElderPage() {
+  return (
+    <Suspense fallback={<main className="flex flex-col flex-1 pb-32" />}>
+      <EditElderInner />
+    </Suspense>
   );
 }
