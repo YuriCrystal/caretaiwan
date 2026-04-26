@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { exportAllData, importAllData } from "@/lib/elder";
+import { loginWithLine, logout } from "@/app/actions/auth-actions";
 
 type SessionInfo =
   | { loggedIn: false }
@@ -153,12 +154,14 @@ export default function BackupPage() {
           )}
 
           {session?.loggedIn === false && (
-            <a
-              href={`/api/auth/signin/line?callbackUrl=${encodeURIComponent("/backup")}`}
-              className="block text-center w-full h-14 leading-[3.5rem] bg-emerald-600 active:bg-emerald-700 text-white rounded-2xl font-bold"
-            >
-              用 LINE 登入
-            </a>
+            <form action={loginWithLine}>
+              <button
+                type="submit"
+                className="w-full h-14 bg-emerald-600 active:bg-emerald-700 text-white rounded-2xl font-bold"
+              >
+                用 LINE 登入
+              </button>
+            </form>
           )}
 
           {session?.loggedIn === true && (
@@ -177,12 +180,14 @@ export default function BackupPage() {
                   </div>
                   <div className="text-xs text-zinc-500">已登入</div>
                 </div>
-                <a
-                  href={`/api/auth/signout?callbackUrl=${encodeURIComponent("/backup")}`}
-                  className="text-sm text-zinc-500 px-3 py-2 active:text-zinc-700"
-                >
-                  登出
-                </a>
+                <form action={logout}>
+                  <button
+                    type="submit"
+                    className="text-sm text-zinc-500 px-3 py-2 active:text-zinc-700"
+                  >
+                    登出
+                  </button>
+                </form>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <button
