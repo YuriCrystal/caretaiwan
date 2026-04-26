@@ -1,5 +1,5 @@
-// CareTaiwan Service Worker — v3 (預快取 6 大類 + 35 條情境，首次離線即可用)
-const CACHE_NAME = "caretaiwan-v3";
+// CareTaiwan Service Worker — v4 (network-first navigation 避免新部署後 HTML/chunk 失配)
+const CACHE_NAME = "caretaiwan-v4";
 
 const STATIC_URLS = [
   "/",
@@ -94,21 +94,22 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Navigation requests: stale-while-revalidate (instant from cache, refresh in background)
+  // Navigation requests: network-first to ensure fresh HTML matches deployed chunk names.
+  // Cache fallback only when offline. This avoids "page errors after redeploy" caused by
+  // stale cached HTML referencing chunks that have been replaced.
   if (req.mode === "navigate") {
     event.respondWith(
-      caches.match(req).then((cached) => {
-        const fetchPromise = fetch(req)
-          .then((res) => {
-            if (res.ok) {
-              const copy = res.clone();
-              caches.open(CACHE_NAME).then((c) => c.put(req, copy));
-            }
-            return res;
-          })
-          .catch(() => cached || caches.match("/"));
-        return cached || fetchPromise;
-      })
+      fetch(req)
+        .then((res) => {
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((c) => c.put(req, copy));
+          }
+          return res;
+        })
+        .catch(() =>
+          caches.match(req).then((cached) => cached || caches.match("/"))
+        )
     );
     return;
   }
