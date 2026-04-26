@@ -1,15 +1,11 @@
 import NextAuth from "next-auth";
 import LineProvider from "next-auth/providers/line";
 
-// Patch LineProvider to override hardcoded HS256 with ES256 (LINE's actual spec)
+// LINE 實際上用 HS256 簽 id_token（用 channel secret 做 HMAC），保留 next-auth 預設值
 const linePatched = LineProvider({
   clientId: process.env.LINE_CHANNEL_ID ?? "",
   clientSecret: process.env.LINE_CHANNEL_SECRET ?? "",
 });
-// Force-overwrite the client config (deep merge can't replace nested defaults reliably here)
-(linePatched as { client?: Record<string, unknown> }).client = {
-  id_token_signed_response_alg: "ES256",
-};
 
 // Capture last logged error for diagnostic exposure
 const lastErrors: { time: string; code: string; message: string; cause?: unknown }[] = [];
