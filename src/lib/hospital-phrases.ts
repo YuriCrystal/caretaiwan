@@ -110,6 +110,12 @@ export const SCENARIO_PHRASES: Record<string, Phrase> = {
     id: "Tekanan darahnya terlalu tinggi (di atas 180/110), disertai sakit kepala / penglihatan kabur / nyeri dada.",
     vi: "Huyết áp quá cao (trên 180/110), kèm đau đầu / mờ mắt / đau ngực.",
   },
+  "16": {
+    zh: "他血糖太高（超過 300），可能需要調整胰島素。",
+    en: "His blood sugar is too high (over 300). Insulin adjustment may be needed.",
+    id: "Gula darahnya terlalu tinggi (di atas 300). Mungkin perlu penyesuaian insulin.",
+    vi: "Đường huyết quá cao (trên 300). Có thể cần điều chỉnh insulin.",
+  },
   "15": {
     zh: "他血糖太低（< 70），快不行了。",
     en: "His blood sugar is too low (below 70). It's an emergency.",

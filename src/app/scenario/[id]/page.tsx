@@ -119,11 +119,11 @@ export default async function ScenarioPage({
         </details>
       )}
 
-      {/* Hospital communication phrases (red scenarios only) */}
-      {s.level === "red" && (
+      {/* Hospital communication phrases — show whenever the scenario has a phrase, or for any red scenario */}
+      {(SCENARIO_PHRASES[s.id] || s.level === "red") && (
         <section className="px-5 mt-8">
           <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 mb-2">
-            🏥 就醫溝通短句（給醫護看／聽）
+            🏥 溝通短句（給醫護／家屬看）
           </h2>
           {SCENARIO_PHRASES[s.id] && (
             <div className="mb-3">
