@@ -1,20 +1,23 @@
 import NextAuth from "next-auth";
 import LineProvider from "next-auth/providers/line";
 
+// Patch LineProvider to override hardcoded HS256 with ES256 (LINE's actual spec)
+const linePatched = LineProvider({
+  clientId: process.env.LINE_CHANNEL_ID ?? "",
+  clientSecret: process.env.LINE_CHANNEL_SECRET ?? "",
+});
+// Force-overwrite the client config (deep merge can't replace nested defaults reliably here)
+(linePatched as { client?: Record<string, unknown> }).client = {
+  id_token_signed_response_alg: "ES256",
+};
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  trustHost: true, // Required for Vercel deployments
-  debug: true, // Enable debug logging in Vercel function logs
+  trustHost: true,
+  debug: true,
   pages: {
     error: "/auth-error",
   },
-  providers: [
-    LineProvider({
-      clientId: process.env.LINE_CHANNEL_ID ?? "",
-      clientSecret: process.env.LINE_CHANNEL_SECRET ?? "",
-      // LINE 已改用 ES256 簽 id_token，next-auth 預設 HS256 會配置失敗
-      client: { id_token_signed_response_alg: "ES256" },
-    }),
-  ],
+  providers: [linePatched],
   callbacks: {
     async jwt({ token, profile }) {
       if (profile) {
