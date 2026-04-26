@@ -1,14 +1,37 @@
-// CareTaiwan Service Worker — v2 (含 _next/static 快取，支援完整離線互動)
-const CACHE_NAME = "caretaiwan-v2";
-const PRECACHE_URLS = [
+// CareTaiwan Service Worker — v3 (預快取 6 大類 + 35 條情境，首次離線即可用)
+const CACHE_NAME = "caretaiwan-v3";
+
+const STATIC_URLS = [
   "/",
   "/help",
   "/record",
   "/card",
+  "/card/edit",
   "/manifest.json",
   "/icon-192.png",
   "/icon-512.png",
 ];
+
+const CATEGORY_URLS = [
+  "/category/emergency",
+  "/category/vitals",
+  "/category/medication",
+  "/category/bedridden",
+  "/category/dementia",
+  "/category/feeding",
+];
+
+const SCENARIO_IDS = [
+  "01","02","03","04","05","06","07","08","09","10",
+  "11","12","13","14","15","16","17","18",
+  "19","20","21","22","25",
+  "26","27","29","30","31",
+  "34","35","38","39","40","41",
+  "42","44","45","46","50",
+];
+const SCENARIO_URLS = SCENARIO_IDS.map((id) => `/scenario/${id}`);
+
+const PRECACHE_URLS = [...STATIC_URLS, ...CATEGORY_URLS, ...SCENARIO_URLS];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
