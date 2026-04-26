@@ -1,0 +1,23 @@
+{
+  "name": "看護助手 CareTaiwan",
+  "short_name": "CareTaiwan",
+  "description": "外籍看護工的台灣照護工具",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#0f172a",
+  "lang": "zh-TW",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
