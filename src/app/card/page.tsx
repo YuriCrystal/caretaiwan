@@ -274,13 +274,16 @@ export default function CardPage() {
           </Section>
         )}
 
+        {/* Pairing for LINE Bot */}
+        <PairingSection elderId={elder.id} elderName={elder.name} />
+
         {/* Share + edit */}
         <div className="grid grid-cols-2 gap-2 pt-2">
           <button
             onClick={handleShare}
             className="h-12 bg-emerald-600 active:bg-emerald-700 text-white rounded-xl font-semibold"
           >
-            📤 分享給家屬
+            📤 分享文字給家屬
           </button>
           <Link
             href={`/card/edit?id=${elder.id}`}
@@ -327,6 +330,110 @@ function Header({
         </Link>
       )}
     </header>
+  );
+}
+
+function PairingSection({
+  elderId,
+  elderName,
+}: {
+  elderId: string;
+  elderName: string;
+}) {
+  const [code, setCode] = useState<string | null>(null);
+  const [paired, setPaired] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch("/api/session")
+      .then((r) => r.json())
+      .then((s) => setLoggedIn(s.loggedIn === true))
+      .catch(() => setLoggedIn(false));
+  }, []);
+
+  const handleGenerate = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/pairing/ensure", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ elderId, displayName: elderName }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setCode(data.code);
+        setPaired(data.paired);
+      } else {
+        setError(data.error ?? "失敗");
+      }
+    } catch {
+      setError("網路錯誤");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loggedIn === null) {
+    return null;
+  }
+
+  if (!loggedIn) {
+    return (
+      <section className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-sm text-zinc-500">
+        💡 想讓家屬透過 LINE 收到記錄通知？先到「
+        <Link href="/backup" className="underline">
+          備份頁
+        </Link>
+        」用 LINE 登入，再回來這裡產生配對碼。
+      </section>
+    );
+  }
+
+  return (
+    <section className="p-4 bg-blue-50 dark:bg-blue-950 border-2 border-blue-200 dark:border-blue-800 rounded-2xl">
+      <h2 className="text-sm font-bold text-blue-900 dark:text-blue-100 mb-2">
+        📲 配對家屬 LINE
+      </h2>
+      {!code && (
+        <>
+          <p className="text-sm text-blue-900 dark:text-blue-100 mb-3">
+            產生 6 位配對碼，傳給家屬。家屬加入 LINE 官方帳號後輸入此碼，
+            之後你按「送出給家屬」的記錄會直接傳到家屬的 LINE。
+          </p>
+          <button
+            onClick={handleGenerate}
+            disabled={loading}
+            className="w-full h-12 bg-blue-600 active:bg-blue-700 text-white rounded-xl font-semibold disabled:opacity-50"
+          >
+            {loading ? "處理中…" : "產生配對碼"}
+          </button>
+          {error && (
+            <p className="text-xs text-red-600 dark:text-red-400 mt-2">{error}</p>
+          )}
+        </>
+      )}
+      {code && (
+        <div className="space-y-3">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 text-center">
+            <div className="text-xs text-zinc-500 mb-1">配對碼</div>
+            <div className="text-3xl font-bold tracking-widest tabular-nums">
+              {code}
+            </div>
+            <div className="text-xs text-zinc-500 mt-2">
+              {paired ? "✅ 已配對家屬" : "⏳ 等待家屬輸入此碼"}
+            </div>
+          </div>
+          <div className="text-xs text-blue-900 dark:text-blue-100 space-y-1">
+            <p>1. 把上面 6 碼傳給家屬</p>
+            <p>2. 家屬加官方帳號為好友（QR 碼／ID 由你提供）</p>
+            <p>3. 家屬把這 6 碼貼給 Bot 即配對</p>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { pushRecordToFamily } from "@/app/actions/push-actions";
+import { getActiveElder } from "@/lib/elder";
 
 type RecordType = "temp" | "stool" | "sleep" | "fall" | "med" | "meal";
 
@@ -91,6 +93,24 @@ export default function RecordPage() {
     const all = JSON.parse(localStorage.getItem("records") || "[]");
     all.push(record);
     localStorage.setItem("records", JSON.stringify(all));
+
+    // Push to family via LINE if shared toggle is on
+    if (shareWithFamily) {
+      const elder = getActiveElder();
+      if (elder?.id) {
+        pushRecordToFamily({
+          elderId: elder.id,
+          elderName: elder.name,
+          recordType: selected,
+          value: selected === "temp" ? tempValue : undefined,
+          note: note.trim(),
+          timestamp: record.timestamp,
+        }).catch(() => {
+          /* silent: record is already saved locally */
+        });
+      }
+    }
+
     setStage("saved");
     setTimeout(() => {
       setStage("menu");
