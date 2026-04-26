@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 type RecordType = "temp" | "stool" | "sleep" | "fall" | "med" | "meal";
@@ -35,11 +35,19 @@ export default function RecordPage() {
   const [recordCount, setRecordCount] = useState(0);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [clearedCount, setClearedCount] = useState<number | null>(null);
+  const confirmRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const all = JSON.parse(localStorage.getItem("records") || "[]");
     setRecordCount(all.length);
   }, [stage, showClearConfirm]);
+
+  // Scroll confirm dialog into view when it opens
+  useEffect(() => {
+    if (showClearConfirm && confirmRef.current) {
+      confirmRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [showClearConfirm]);
 
   const today = new Date().toLocaleDateString("zh-TW", {
     month: "2-digit",
@@ -101,7 +109,7 @@ export default function RecordPage() {
   // ----- Stage: temperature input -----
   if (stage === "tempInput") {
     return (
-      <main className="flex flex-col flex-1 pb-32">
+      <main className="flex flex-col flex-1 pb-[calc(env(safe-area-inset-bottom)+12rem)]">
         <header className="px-5 pt-4 pb-3 flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-800">
           <button
             onClick={() => setStage("menu")}
@@ -152,7 +160,7 @@ export default function RecordPage() {
     const item = ITEMS.find((i) => i.id === selected)!;
     const templates = NOTE_TEMPLATES[selected];
     return (
-      <main className="flex flex-col flex-1 pb-32">
+      <main className="flex flex-col flex-1 pb-[calc(env(safe-area-inset-bottom)+12rem)]">
         <header className="px-5 pt-4 pb-3 flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-800">
           <button
             onClick={() => setStage(selected === "temp" ? "tempInput" : "menu")}
@@ -243,7 +251,7 @@ export default function RecordPage() {
 
   // ----- Stage: menu (default) -----
   return (
-    <main className="flex flex-col flex-1 pb-8 relative">
+    <main className="flex flex-col flex-1 pb-[calc(env(safe-area-inset-bottom)+12rem)] relative">
       {/* Cleared confirmation toast */}
       {clearedCount !== null && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 w-full max-w-md">
@@ -314,12 +322,15 @@ export default function RecordPage() {
             <span className="text-zinc-400">›</span>
           </button>
         ) : (
-          <div className="p-4 bg-amber-50 dark:bg-amber-950 border border-amber-300 dark:border-amber-800 rounded-xl">
+          <div
+            ref={confirmRef}
+            className="p-4 bg-amber-50 dark:bg-amber-950 border border-amber-300 dark:border-amber-800 rounded-xl scroll-mt-20"
+          >
             <p className="font-semibold text-amber-900 dark:text-amber-100">
               確定要清除全部 {recordCount} 條記錄？
             </p>
             <p className="text-xs text-amber-800 dark:text-amber-200 mt-1">
-              清除後無法復原
+              清除後無法復原（已送給家屬的不會受影響）
             </p>
             <div className="flex gap-2 mt-3">
               <button
