@@ -3,10 +3,14 @@ import LineProvider from "next-auth/providers/line";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true, // Required for Vercel deployments
+  debug: true, // Enable debug logging in Vercel function logs
+  pages: {
+    error: "/auth-error",
+  },
   providers: [
     LineProvider({
-      clientId: process.env.LINE_CHANNEL_ID,
-      clientSecret: process.env.LINE_CHANNEL_SECRET,
+      clientId: process.env.LINE_CHANNEL_ID ?? "",
+      clientSecret: process.env.LINE_CHANNEL_SECRET ?? "",
     }),
   ],
   callbacks: {
