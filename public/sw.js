@@ -1,5 +1,5 @@
 // CareTaiwan Service Worker — v4 (network-first navigation 避免新部署後 HTML/chunk 失配)
-const CACHE_NAME = "caretaiwan-v6";
+const CACHE_NAME = "caretaiwan-v7";
 
 const STATIC_URLS = [
   "/",
@@ -70,6 +70,11 @@ self.addEventListener("fetch", (event) => {
     url.pathname.includes("hot-update") ||
     url.pathname.includes("hmr")
   ) {
+    return;
+  }
+
+  // Never cache API routes (auth, cloud sync)
+  if (url.pathname.startsWith("/api/")) {
     return;
   }
 
