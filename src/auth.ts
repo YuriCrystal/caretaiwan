@@ -11,6 +11,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CHANNEL_ID ?? "",
       clientSecret: process.env.LINE_CHANNEL_SECRET ?? "",
+      // LINE 已改用 ES256 簽 id_token，next-auth 預設 HS256 會配置失敗
+      client: { id_token_signed_response_alg: "ES256" },
     }),
   ],
   callbacks: {
