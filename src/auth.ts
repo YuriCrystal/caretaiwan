@@ -32,7 +32,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
-  pages: {
-    // Use default Auth.js sign-in page
-  },
 });
