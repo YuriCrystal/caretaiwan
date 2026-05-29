@@ -1,0 +1,244 @@
+// 看護端拍照上傳 - 寫到 Supabase Storage **私有** bucket,回 storage path
+// 後端 push 時才簽 1h signed URL 給 LINE,降低 URL 外流風險
+//
+// 前置:Supabase Dashboard → Storage → bucket "record-photos" 必須 **Private**
+//
+// v55 變更（codex audit）:
+//   - rateLimit() 改 await rateLimitAsync() + IP+user 雙 key（HIGH-1）
+//   - 依 detected magic byte 對應副檔名 + contentType（MEDIUM-4）
+//   - upload 時 insert record_photos metadata、push 時驗證 actor+elder+purpose（HIGH-2）
+//   - 要 frontend 傳 elderId + purpose，並驗證 caller 真的有配對此 elder
+import { NextResponse } from "next/server";
+import crypto from "crypto";
+import { auth } from "@/auth";
+import { getSupabaseAdmin, isCloudEnabled } from "@/lib/supabase-server";
+import { checkSameOrigin } from "@/lib/origin-check";
+import { logAudit, getActorIp } from "@/lib/audit";
+import { rateLimitAsync } from "@/lib/rate-limit";
+import { getPairingsByPaired } from "@/lib/pairing";
+import { insertPhotoMetadata } from "@/lib/record-photos";
+
+export const runtime = "nodejs";
+
+const BUCKET = "record-photos";
+const MAX_BYTES = 4 * 1024 * 1024; // 4MB,client resize 後通常遠小於此
+
+type DetectedFormat = "jpeg" | "png" | "webp" | "gif";
+
+const FORMAT_META: Record<DetectedFormat, { ext: string; contentType: string }> = {
+  jpeg: { ext: "jpg", contentType: "image/jpeg" },
+  png: { ext: "png", contentType: "image/png" },
+  webp: { ext: "webp", contentType: "image/webp" },
+  gif: { ext: "gif", contentType: "image/gif" },
+};
+
+// Magic byte 驗證:只接受真正的 JPEG/PNG/WebP/GIF
+// 拒絕 SVG (可帶 <script>) 與其他被偽造 MIME 的檔案
+function detectImageType(bytes: Uint8Array): DetectedFormat | null {
+  if (bytes.length < 12) return null;
+  // JPEG: FF D8 FF
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "jpeg";
+  // PNG: 89 50 4E 47 0D 0A 1A 0A
+  if (
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47 &&
+    bytes[4] === 0x0d &&
+    bytes[5] === 0x0a &&
+    bytes[6] === 0x1a &&
+    bytes[7] === 0x0a
+  )
+    return "png";
+  // WebP: "RIFF" .... "WEBP"
+  if (
+    bytes[0] === 0x52 &&
+    bytes[1] === 0x49 &&
+    bytes[2] === 0x46 &&
+    bytes[3] === 0x46 &&
+    bytes[8] === 0x57 &&
+    bytes[9] === 0x45 &&
+    bytes[10] === 0x42 &&
+    bytes[11] === 0x50
+  )
+    return "webp";
+  // GIF: "GIF87a" / "GIF89a"
+  if (
+    bytes[0] === 0x47 &&
+    bytes[1] === 0x49 &&
+    bytes[2] === 0x46 &&
+    bytes[3] === 0x38 &&
+    (bytes[4] === 0x37 || bytes[4] === 0x39) &&
+    bytes[5] === 0x61
+  )
+    return "gif";
+  return null;
+}
+
+export async function POST(req: Request) {
+  const ip = getActorIp(req);
+  const csrf = checkSameOrigin(req);
+  if (csrf) {
+    logAudit({ action: "FORBIDDEN_ORIGIN", actorIp: ip, resourceType: "photo", status: "forbidden" });
+    return csrf;
+  }
+  if (!isCloudEnabled()) {
+    return NextResponse.json({ error: "雲端服務未啟用" }, { status: 503 });
+  }
+  const session = await auth();
+  const lineUserId = (session?.user as { lineUserId?: string } | undefined)?.lineUserId;
+  if (!lineUserId) {
+    return NextResponse.json({ error: "未登入" }, { status: 401 });
+  }
+
+  // 限流:雙 key（user + IP）跨 Vercel instance 共用 Upstash
+  // user-key: 每人 10 張 / min（防誤觸）
+  // ip-key: 同 IP 30 張 / min（防多帳號共用同 IP 濫用）
+  const rlUser = await rateLimitAsync(`photo-upload:u:${lineUserId}`, {
+    max: 10,
+    windowMs: 60_000,
+  });
+  if (!rlUser.ok) {
+    return NextResponse.json(
+      { error: "上傳過於頻繁,請稍後再試" },
+      { status: 429 }
+    );
+  }
+  const rlIp = await rateLimitAsync(`photo-upload:ip:${ip}`, {
+    max: 30,
+    windowMs: 60_000,
+  });
+  if (!rlIp.ok) {
+    return NextResponse.json(
+      { error: "上傳過於頻繁,請稍後再試" },
+      { status: 429 }
+    );
+  }
+
+  let formData: FormData;
+  try {
+    formData = await req.formData();
+  } catch {
+    return NextResponse.json({ error: "格式錯誤" }, { status: 400 });
+  }
+
+  const photo = formData.get("photo");
+  const elderId = formData.get("elderId");
+  const purposeRaw = formData.get("purpose");
+
+  if (!(photo instanceof Blob)) {
+    return NextResponse.json({ error: "缺少照片檔" }, { status: 400 });
+  }
+  if (typeof elderId !== "string" || !elderId) {
+    return NextResponse.json({ error: "缺少 elderId" }, { status: 400 });
+  }
+  if (purposeRaw !== "record" && purposeRaw !== "expense") {
+    return NextResponse.json({ error: "purpose 錯誤" }, { status: 400 });
+  }
+  const purpose = purposeRaw;
+
+  if (photo.size > MAX_BYTES) {
+    return NextResponse.json(
+      { error: `檔案過大 (上限 ${MAX_BYTES / 1024 / 1024}MB)` },
+      { status: 400 }
+    );
+  }
+  if (!photo.type.startsWith("image/")) {
+    return NextResponse.json({ error: "只接受圖片檔" }, { status: 400 });
+  }
+
+  // 驗證 caller 真的配對此 elder（否則就是 hijack 別人的 elder_id）
+  const pairings = await getPairingsByPaired(lineUserId);
+  const pairing = pairings.find((p) => p.elder_id === elderId);
+  if (!pairing) {
+    logAudit({
+      action: "PHOTO_UPLOAD",
+      actorLineUserId: lineUserId,
+      actorIp: ip,
+      resourceType: "photo",
+      status: "forbidden",
+      metadata: { reason: "NOT_PAIRED", elderId },
+    });
+    return NextResponse.json({ error: "未配對此卡" }, { status: 403 });
+  }
+
+  // 讀檔 + magic byte 驗證 (拒 SVG / 偽 MIME)
+  const buffer = new Uint8Array(await photo.arrayBuffer());
+  const detected = detectImageType(buffer);
+  if (!detected) {
+    logAudit({
+      action: "PHOTO_UPLOAD",
+      actorLineUserId: lineUserId,
+      actorIp: ip,
+      resourceType: "photo",
+      status: "forbidden",
+      metadata: { reason: "INVALID_IMAGE_BYTES" },
+    });
+    return NextResponse.json({ error: "檔案不是合法圖片" }, { status: 400 });
+  }
+
+  const sb = getSupabaseAdmin()!;
+  // path 不再含 lineUserId,改用 UUID 完全不可枚舉
+  // 依 detected magic byte 對應副檔名（v55, 不再一律存 .jpg）
+  const meta = FORMAT_META[detected];
+  const fileName = `${crypto.randomUUID()}.${meta.ext}`;
+
+  const { error: uploadErr } = await sb.storage
+    .from(BUCKET)
+    .upload(fileName, buffer, {
+      contentType: meta.contentType,
+      cacheControl: "31536000", // 1 year
+      upsert: false,
+    });
+
+  if (uploadErr) {
+    console.error("[photo/upload]", uploadErr.message);
+    logAudit({
+      action: "PHOTO_UPLOAD",
+      actorLineUserId: lineUserId,
+      actorIp: ip,
+      resourceType: "photo",
+      status: "fail",
+      metadata: { reason: uploadErr.message.slice(0, 80) },
+    });
+    return NextResponse.json({ error: "儲存失敗" }, { status: 500 });
+  }
+
+  // Insert metadata（v55, HIGH-2 修補）
+  // 若 metadata insert 失敗，回滾 storage 避免 orphan + 無法 push
+  const metaResult = await insertPhotoMetadata({
+    path: fileName,
+    uploaderLineUserId: lineUserId,
+    elderId,
+    purpose,
+  });
+  if (!metaResult.ok) {
+    // 試圖刪除剛上傳的 object，避免 orphan
+    await sb.storage.from(BUCKET).remove([fileName]).catch(() => {});
+    logAudit({
+      action: "PHOTO_UPLOAD",
+      actorLineUserId: lineUserId,
+      actorIp: ip,
+      resourceType: "photo",
+      status: "fail",
+      metadata: { reason: "META_INSERT_FAIL" },
+    });
+    return NextResponse.json({ error: "儲存失敗" }, { status: 500 });
+  }
+
+  logAudit({
+    action: "PHOTO_UPLOAD",
+    actorLineUserId: lineUserId,
+    actorIp: ip,
+    resourceType: "photo",
+    resourceId: fileName,
+    status: "ok",
+    metadata: { format: detected, purpose, elderId },
+  });
+
+  // 不回傳公開 URL,只回 path - push 時再簽 1h signed URL 給 LINE
+  return NextResponse.json({
+    ok: true,
+    path: fileName,
+  });
+}

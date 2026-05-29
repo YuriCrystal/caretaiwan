@@ -28,7 +28,8 @@ export function verifyLineSignature(
 
 type LineMessage =
   | { type: "text"; text: string }
-  | { type: "flex"; altText: string; contents: unknown };
+  | { type: "flex"; altText: string; contents: unknown }
+  | { type: "image"; originalContentUrl: string; previewImageUrl: string };
 
 export async function pushMessage(
   toUserId: string,

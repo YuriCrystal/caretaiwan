@@ -4,8 +4,8 @@
   "description": "外籍看護工的台灣照護工具",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fafafa",
-  "theme_color": "#0f172a",
+  "background_color": "#f1f5fb",
+  "theme_color": "#2563eb",
   "lang": "zh-TW",
   "orientation": "portrait",
   "icons": [

@@ -51,7 +51,7 @@ export default function ThemeToggle() {
       onClick={cycle}
       title={`目前：${title}（點擊切換）`}
       aria-label={`切換主題：${title}`}
-      className="w-11 h-11 flex items-center justify-center rounded-full text-xl active:bg-zinc-100 dark:active:bg-zinc-800"
+      className="w-11 h-11 flex items-center justify-center rounded-full text-xl active:bg-slate-100 dark:active:bg-slate-800"
     >
       {label}
     </button>

@@ -1,49 +1,82 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  Home,
+  IdCard,
+  NotebookPen,
+  LifeBuoy,
+  Send,
+  type LucideIcon,
+} from "lucide-react";
+import { getRole, type Role } from "@/lib/role";
+import { useT } from "@/lib/i18n";
 
-const ITEMS = [
-  { href: "/", icon: "🏠", label: "首頁" },
-  { href: "/card", icon: "🆔", label: "醫護卡" },
-  { href: "/record", icon: "📝", label: "3 秒記錄" },
-  { href: "/help", icon: "🆘", label: "我需要協助", danger: true },
-];
+type Item = { href: string; Icon: LucideIcon; label: string; danger?: boolean };
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const [role, setRole] = useState<Role | null>(null);
+  const t = useT();
+
+  useEffect(() => {
+    setRole(getRole());
+  }, [pathname]);
+
+  const CAREGIVER_ITEMS: Item[] = [
+    { href: "/", Icon: Home, label: t.nav.home },
+    { href: "/card", Icon: IdCard, label: t.nav.card },
+    { href: "/record", Icon: NotebookPen, label: t.nav.record },
+    { href: "/help", Icon: LifeBuoy, label: t.nav.help, danger: true },
+  ];
+
+  // 家屬端維持中文(目標族群是台灣家屬)
+  const FAMILY_ITEMS: Item[] = [
+    { href: "/family", Icon: Home, label: "首頁" },
+    { href: "/family/card", Icon: IdCard, label: "醫護卡" },
+    { href: "/family-setup", Icon: Send, label: "連線教學" },
+    { href: "/help", Icon: LifeBuoy, label: "我需要協助", danger: true },
+  ];
+
+  // 在角色未確定前用看護端 nav（避免 hydration 不對）
+  const items = role === "family" ? FAMILY_ITEMS : CAREGIVER_ITEMS;
 
   const isActive = (href: string) => {
-    if (href === "/") return pathname === "/";
+    if (href === "/" || href === "/family") return pathname === href;
     return pathname === href || pathname.startsWith(href + "/");
   };
 
   return (
-    <nav
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 pb-[env(safe-area-inset-bottom)] z-30"
-    >
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/60 dark:border-slate-800/60 pb-[env(safe-area-inset-bottom)] z-30 shadow-lift">
       <div className="grid grid-cols-4 gap-1 p-2">
-        {ITEMS.map((it) => {
+        {items.map((it) => {
           const active = isActive(it.href);
-          const baseCls = "flex flex-col items-center gap-0.5 py-2 rounded-lg transition-colors";
+          const baseCls = "flex flex-col items-center gap-1 py-2 rounded-xl transition-all";
           let cls = baseCls;
+          let iconCls = "w-6 h-6";
           if (it.danger) {
             cls += active
-              ? " bg-red-100 dark:bg-red-900"
-              : " bg-red-50 dark:bg-red-950 active:bg-red-100 dark:active:bg-red-900";
+              ? " bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900 dark:to-red-800 shadow-card"
+              : " bg-red-50 dark:bg-red-950/50 active:bg-red-100 dark:active:bg-red-900";
+            iconCls += " text-red-600 dark:text-red-300";
           } else {
             cls += active
-              ? " bg-zinc-100 dark:bg-zinc-800"
-              : " active:bg-zinc-100 dark:active:bg-zinc-800";
+              ? " bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 shadow-card"
+              : " active:bg-slate-100 dark:active:bg-slate-800";
+            iconCls += active
+              ? " text-blue-600 dark:text-blue-300"
+              : " text-slate-500 dark:text-slate-400";
           }
           const labelCls = it.danger
             ? "text-xs font-bold text-red-700 dark:text-red-300"
             : active
-            ? "text-xs font-semibold text-zinc-900 dark:text-zinc-100"
-            : "text-xs font-medium text-zinc-600 dark:text-zinc-400";
+            ? "text-xs font-bold text-blue-700 dark:text-blue-300"
+            : "text-xs font-medium text-slate-600 dark:text-slate-400";
           return (
             <Link key={it.href} href={it.href} className={cls}>
-              <span className="text-2xl">{it.icon}</span>
+              <it.Icon className={iconCls} strokeWidth={2.2} />
               <span className={labelCls}>{it.label}</span>
             </Link>
           );

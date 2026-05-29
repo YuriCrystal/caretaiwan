@@ -1,12 +1,21 @@
-// Caregiver-side: ensure (or fetch) a pairing code for an elder
+// Family-side (post-flip): ensure (or fetch) a pairing code for an elder
+// 呼叫者 = 家屬端,他擁有醫護卡並產生 6 位配對碼給看護輸入
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { ensurePairing } from "@/lib/pairing";
 import { isCloudEnabled } from "@/lib/supabase-server";
+import { checkSameOrigin } from "@/lib/origin-check";
+import { logAudit, getActorIp } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
+  const ip = getActorIp(req);
+  const csrf = checkSameOrigin(req);
+  if (csrf) {
+    logAudit({ action: "FORBIDDEN_ORIGIN", actorIp: ip, resourceType: "pairing", status: "forbidden" });
+    return csrf;
+  }
   if (!isCloudEnabled()) {
     return NextResponse.json({ error: "雲端服務未啟用" }, { status: 503 });
   }
@@ -28,8 +37,25 @@ export async function POST(req: Request) {
     body.displayName ?? null
   );
   if (!result.ok) {
-    return NextResponse.json({ error: result.error }, { status: 500 });
+    console.error("[pairing/ensure]", result.error);
+    logAudit({
+      action: "PAIRING_CREATE",
+      actorLineUserId: lineUserId,
+      actorIp: ip,
+      resourceType: "pairing",
+      resourceId: body.elderId,
+      status: "fail",
+    });
+    return NextResponse.json({ error: "伺服器錯誤" }, { status: 500 });
   }
+  logAudit({
+    action: "PAIRING_CREATE",
+    actorLineUserId: lineUserId,
+    actorIp: ip,
+    resourceType: "pairing",
+    resourceId: body.elderId,
+    status: "ok",
+  });
   return NextResponse.json({
     ok: true,
     code: result.code,

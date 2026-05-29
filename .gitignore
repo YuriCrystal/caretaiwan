@@ -41,3 +41,12 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# claude code local settings (per-machine permission allowlist)
+.claude/settings.local.json
+
+# personal marketing / outreach docs (exclude before open-sourcing)
+OUTREACH_TADA.md
+LINKEDIN_POST.md
+PORTFOLIO_ENTRY.md
+CODEX_REVIEW_BRIEF.md

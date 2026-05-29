@@ -1,39 +1,27 @@
 // CareTaiwan Service Worker — v4 (network-first navigation 避免新部署後 HTML/chunk 失配)
-const CACHE_NAME = "caretaiwan-v9";
+const CACHE_NAME = "caretaiwan-v56";
 
-const STATIC_URLS = [
+const PRECACHE_URLS = [
   "/",
   "/help",
   "/record",
   "/card",
-  "/card/edit",
   "/about",
   "/backup",
+  "/auth-error",
+  "/expense",
+  "/family",
+  "/family/card",
+  "/family/card/edit",
+  "/family/expense",
+  "/family-setup",
+  "/tutorial",
+  "/privacy",
+  "/terms",
   "/manifest.json",
   "/icon-192.png",
   "/icon-512.png",
 ];
-
-const CATEGORY_URLS = [
-  "/category/emergency",
-  "/category/vitals",
-  "/category/medication",
-  "/category/bedridden",
-  "/category/dementia",
-  "/category/feeding",
-];
-
-const SCENARIO_IDS = [
-  "01","02","03","04","05","06","07","08","09","10",
-  "11","12","13","14","15","16","17","18",
-  "19","20","21","22","25",
-  "26","27","29","30","31",
-  "34","35","38","39","40","41",
-  "42","44","45","46","50",
-];
-const SCENARIO_URLS = SCENARIO_IDS.map((id) => `/scenario/${id}`);
-
-const PRECACHE_URLS = [...STATIC_URLS, ...CATEGORY_URLS, ...SCENARIO_URLS];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

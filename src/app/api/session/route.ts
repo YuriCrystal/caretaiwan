@@ -8,11 +8,9 @@ export async function GET() {
   if (!session?.user) {
     return NextResponse.json({ loggedIn: false });
   }
-  const lineUserId = (session.user as { lineUserId?: string }).lineUserId;
   return NextResponse.json({
     loggedIn: true,
     name: session.user.name ?? null,
     picture: session.user.image ?? null,
-    lineUserId: lineUserId ?? null,
   });
 }

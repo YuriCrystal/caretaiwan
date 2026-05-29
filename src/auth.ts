@@ -11,6 +11,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     LineProvider({
       clientId: process.env.LINE_CHANNEL_ID ?? "",
       clientSecret: process.env.LINE_CHANNEL_SECRET ?? "",
+      authorization: {
+        params: {
+          // 只要 profile + openid (Channel 通常沒開 email 權限,加 email 會 400)
+          // 不設 prompt — 讓 LINE 預設行為決定是否觸發 app handoff
+          scope: "profile openid",
+        },
+      },
     }),
   ],
   callbacks: {

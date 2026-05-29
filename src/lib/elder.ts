@@ -149,32 +149,149 @@ export function exportAllData(): string {
   );
 }
 
+// Validate one Elder object — guards against prototype pollution / arbitrary fields
+function sanitizeElder(raw: unknown): Elder | null {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as Record<string, unknown>;
+  if (typeof r.name !== "string") return null;
+  return {
+    id: typeof r.id === "string" ? r.id : genId(),
+    name: String(r.name).slice(0, 100),
+    gender: r.gender === "male" || r.gender === "female" ? r.gender : "",
+    birthday: typeof r.birthday === "string" ? r.birthday.slice(0, 20) : "",
+    bloodType: typeof r.bloodType === "string" ? r.bloodType.slice(0, 10) : "",
+    history: typeof r.history === "string" ? r.history.slice(0, 2000) : "",
+    allergies: typeof r.allergies === "string" ? r.allergies.slice(0, 1000) : "",
+    medications: Array.isArray(r.medications)
+      ? r.medications
+          .filter((m): m is Medication => !!m && typeof m === "object")
+          .slice(0, 50)
+          .map((m) => ({
+            name: String((m as Medication).name ?? "").slice(0, 100),
+            dose: String((m as Medication).dose ?? "").slice(0, 100),
+            time: String((m as Medication).time ?? "").slice(0, 100),
+          }))
+      : [],
+    doctor: typeof r.doctor === "string" ? r.doctor.slice(0, 100) : "",
+    hospital: typeof r.hospital === "string" ? r.hospital.slice(0, 100) : "",
+    contacts: Array.isArray(r.contacts)
+      ? r.contacts
+          .filter((c): c is Contact => !!c && typeof c === "object")
+          .slice(0, 20)
+          .map((c) => ({
+            name: String((c as Contact).name ?? "").slice(0, 100),
+            relation: String((c as Contact).relation ?? "").slice(0, 50),
+            phone: String((c as Contact).phone ?? "").slice(0, 30),
+          }))
+      : [],
+    updatedAt: typeof r.updatedAt === "number" ? r.updatedAt : Date.now(),
+  };
+}
+
 export function importAllData(json: string): {
   ok: boolean;
   message: string;
   elderCount?: number;
   recordCount?: number;
 } {
+  let data: unknown;
   try {
-    const data = JSON.parse(json);
-    if (!data || typeof data !== "object") {
-      return { ok: false, message: "格式錯誤" };
-    }
-    if (data.elderStore && Array.isArray(data.elderStore.elders)) {
-      localStorage.setItem(KEY, JSON.stringify(data.elderStore));
-    }
-    if (Array.isArray(data.records)) {
-      localStorage.setItem("records", JSON.stringify(data.records));
-    }
-    return {
-      ok: true,
-      message: "匯入成功",
-      elderCount: data.elderStore?.elders?.length ?? 0,
-      recordCount: data.records?.length ?? 0,
-    };
-  } catch (e) {
+    data = JSON.parse(json);
+  } catch {
     return { ok: false, message: "JSON 解析失敗" };
   }
+  if (!data || typeof data !== "object") {
+    return { ok: false, message: "格式錯誤" };
+  }
+  const d = data as Record<string, unknown>;
+
+  // Sanitize elderStore
+  let cleanStore: Store | null = null;
+  if (d.elderStore && typeof d.elderStore === "object") {
+    const es = d.elderStore as Record<string, unknown>;
+    if (Array.isArray(es.elders)) {
+      const cleanedElders = es.elders
+        .map(sanitizeElder)
+        .filter((e): e is Elder => e !== null)
+        .slice(0, 50);
+      cleanStore = {
+        elders: cleanedElders,
+        activeId:
+          typeof es.activeId === "string" &&
+          cleanedElders.some((e) => e.id === es.activeId)
+            ? es.activeId
+            : cleanedElders[0]?.id ?? "",
+      };
+      localStorage.setItem(KEY, JSON.stringify(cleanStore));
+    }
+  }
+
+  // Sanitize records (keep only known fields, cap length)
+  let cleanRecords: unknown[] = [];
+  if (Array.isArray(d.records)) {
+    cleanRecords = d.records
+      .filter((r): r is Record<string, unknown> => !!r && typeof r === "object")
+      .slice(0, 5000)
+      .map((r) => ({
+        type: typeof r.type === "string" ? r.type.slice(0, 20) : "",
+        value: typeof r.value === "string" ? r.value.slice(0, 100) : !!r.value,
+        note: typeof r.note === "string" ? r.note.slice(0, 500) : "",
+        timestamp: typeof r.timestamp === "number" ? r.timestamp : Date.now(),
+        shared: !!r.shared,
+      }));
+    localStorage.setItem("records", JSON.stringify(cleanRecords));
+  }
+
+  return {
+    ok: true,
+    message: "匯入成功",
+    elderCount: cleanStore?.elders.length ?? 0,
+    recordCount: cleanRecords.length,
+  };
+}
+
+// 個資法第 11 條：當事人有刪除權 — 一鍵刪除全部本機資料
+export function deleteAllLocalData() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(KEY);
+  localStorage.removeItem(LEGACY_KEY);
+  localStorage.removeItem("records");
+  localStorage.removeItem(PAIRED_ACTIVE_KEY);
+  // 保留 theme 偏好（非個資）
+}
+
+// 看護端：被配對到的老人快取（id + 顯示名稱）。家屬端的醫護卡不會寫進這支手機 elderStore，
+// 只透過 /api/family/paired 唯讀取得。/record 推播時需要 elderId/name，所以快取在這裡。
+const PAIRED_ACTIVE_KEY = "pairedActiveElder";
+
+export type PairedActiveElder = { id: string; name: string };
+
+export function setActivePairedElder(p: PairedActiveElder | null) {
+  if (typeof window === "undefined") return;
+  if (!p) {
+    localStorage.removeItem(PAIRED_ACTIVE_KEY);
+    return;
+  }
+  localStorage.setItem(PAIRED_ACTIVE_KEY, JSON.stringify(p));
+}
+
+export function getActivePairedElder(): PairedActiveElder | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(PAIRED_ACTIVE_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+    if (p && typeof p.id === "string" && typeof p.name === "string") return p;
+  } catch {}
+  return null;
+}
+
+// 給 /record 用：先試 local elderStore（家屬自己的），fallback 到配對快取（看護端）
+export function getActiveElderForRecord(): { id: string; name: string } | null {
+  const owned = getActiveElder();
+  if (owned) return { id: owned.id, name: owned.name };
+  const paired = getActivePairedElder();
+  return paired;
 }
 
 export function calculateAge(birthday: string): number | null {

@@ -4,39 +4,66 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #fafafa;
-  --foreground: #0a0a0a;
+  --background: #f1f5fb;        /* slate-blue tint */
+  --foreground: #0f172a;
+  --brand: #2563eb;             /* medical blue */
+  --brand-soft: #dbeafe;        /* blue-100 */
+  --shadow-card: 0 4px 16px -4px rgb(37 99 235 / 0.08), 0 2px 6px -2px rgb(37 99 235 / 0.05);
+  --shadow-lift: 0 10px 30px -8px rgb(37 99 235 / 0.18), 0 4px 12px -4px rgb(37 99 235 / 0.10);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
 }
 
 /* Auto-follow system if user hasn't explicitly chosen */
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --background: #09090b;
-    --foreground: #fafafa;
+    --background: #060914;
+    --foreground: #f8fafc;
+    --brand: #60a5fa;
+    --brand-soft: #1e293b;
+    --shadow-card: 0 4px 16px -4px rgb(0 0 0 / 0.4);
+    --shadow-lift: 0 10px 30px -8px rgb(0 0 0 / 0.6);
   }
 }
 
 /* Explicit user choice */
 .dark {
-  --background: #09090b;
-  --foreground: #fafafa;
+  --background: #060914;
+  --foreground: #f8fafc;
+  --brand: #60a5fa;
+  --brand-soft: #1e293b;
+  --shadow-card: 0 4px 16px -4px rgb(0 0 0 / 0.4);
+  --shadow-lift: 0 10px 30px -8px rgb(0 0 0 / 0.6);
 }
 .light {
-  --background: #fafafa;
-  --foreground: #0a0a0a;
+  --background: #f1f5fb;
+  --foreground: #0f172a;
+  --brand: #2563eb;
+  --brand-soft: #dbeafe;
+  --shadow-card: 0 4px 16px -4px rgb(37 99 235 / 0.08), 0 2px 6px -2px rgb(37 99 235 / 0.05);
+  --shadow-lift: 0 10px 30px -8px rgb(37 99 235 / 0.18), 0 4px 12px -4px rgb(37 99 235 / 0.10);
 }
 
 html, body {
   font-family: system-ui, -apple-system, "Noto Sans TC", "PingFang TC", sans-serif;
   -webkit-tap-highlight-color: transparent;
+  letter-spacing: -0.01em;
 }
 
 /* Disable iOS zoom on input focus */
 input, select, textarea {
   font-size: 16px;
+}
+
+/* Soft blue-tinted card shadow utility */
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+.shadow-lift {
+  box-shadow: var(--shadow-lift);
 }

@@ -1,65 +1,68 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { ChevronLeft } from "lucide-react";
+import RoleSwitcher from "@/components/RoleSwitcher";
+import { getRole } from "@/lib/role";
 
 export default function AboutPage() {
+  const [backHref, setBackHref] = useState("/");
+  useEffect(() => {
+    setBackHref(getRole() === "family" ? "/family" : "/");
+  }, []);
   return (
     <main className="flex flex-col flex-1 pb-32">
-      <header className="px-5 pt-4 pb-3 flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-800">
+      <header className="px-5 pt-4 pb-3 flex items-center gap-3">
         <Link
-          href="/"
-          className="text-2xl w-10 h-10 flex items-center justify-center rounded-full active:bg-zinc-100 dark:active:bg-zinc-800"
+          href={backHref}
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-white/70 dark:bg-slate-800/70 shadow-card active:scale-95 transition-transform"
         >
-          ←
+          <ChevronLeft className="w-5 h-5 text-slate-700 dark:text-slate-200" strokeWidth={2.4} />
         </Link>
-        <h1 className="text-xl font-bold">ℹ️ 關於本 APP</h1>
+        <h1 className="text-xl font-bold">關於本 APP</h1>
       </header>
 
       <div className="px-5 pt-5 space-y-4">
         <Section title="🩺 看護助手 CareTaiwan">
-          <p>給在台外籍看護工的長照工具，幫助：</p>
+          <p>給在台外籍家庭看護工與家屬的**長照記錄與溝通工具**：</p>
           <ul className="list-disc list-inside mt-2 space-y-1">
-            <li>遇到狀況時 10 秒內查到處置（35 種常見情境）</li>
-            <li>記錄老人每日身體狀態，需要時送給家屬</li>
-            <li>就醫時把短句翻成英／印／越給醫護看</li>
-            <li>緊急時直撥 119 / 1955 / 失智專線</li>
-          </ul>
-        </Section>
-
-        <Section title="📚 內容來源">
-          <ul className="space-y-1.5">
-            <li>・臺北市政府外籍看護照顧手冊（中英／中越／中印 2022 版）</li>
-            <li>・高雄長庚 × 高市衛生局「給外籍移工的認知症照護手冊」</li>
-            <li>・台灣腦中風學會 2025 指引</li>
-            <li>・American Heart Association 2025 CPR &amp; ECC 指南</li>
-            <li>・天主教失智老人基金會教材</li>
-            <li>・健保署藥師諮詢專線 0800-030-598</li>
+            <li>每日健康記錄（體溫、吃藥、跌倒、進食、睡眠、排便）</li>
+            <li>看護備註，記錄當下狀況補充說明</li>
+            <li>選擇性送家屬：看護按下「送出」家屬才收到 LINE 推播</li>
+            <li>多老人醫護卡（用藥、過敏、就診醫院、緊急聯絡人）</li>
+            <li>離線可用 PWA、可加到主畫面</li>
           </ul>
         </Section>
 
         <Section title="⚠️ 重要聲明" emphasis>
           <ul className="space-y-2">
             <li>
-              <strong>內容為 Phase 1 草稿</strong>，待台灣醫護專業審核才會正式上線。
-              請勿單獨依賴此 APP 做醫療判斷。
+              <strong>本服務不提供醫療建議</strong>。所有照護判斷請依專業醫護人員指示。
             </li>
             <li>
-              <strong>緊急狀況請撥 119</strong>，APP 只是輔助參考，不取代專業醫療。
+              <strong>緊急狀況請撥 119</strong>。本 APP 不取代任何緊急醫療管道。
+            </li>
+            <li>
+              本服務目前為**封閉測試版 (Closed Beta)**，僅供受邀測試者使用，不對照護結果負責。
+              正式版上線時將通知使用者。
             </li>
           </ul>
         </Section>
 
         <Section title="🔒 隱私保證">
           <ul className="space-y-1.5">
-            <li>・不要求註冊，不收集個資</li>
-            <li>・所有資料只存在你這支手機</li>
-            <li>・「一鍵清歷史」可隨時刪光本機資料</li>
-            <li>・「我需要協助」不會通知雇主／家屬</li>
-            <li>・看護記錄要你按「送出給家屬」才會傳出去</li>
+            <li>・所有資料優先存在你這支手機，登入 LINE 才會有雲端備份選項</li>
+            <li>・看護備註要按「送出給家屬」才會傳出去</li>
+            <li>・「緊急電話」這個按鈕不會通知雇主／家屬</li>
+            <li>・備份頁有「刪除全部資料」按鈕（個資法刪除權）</li>
           </ul>
         </Section>
 
         <Section title="📦 版本">
           <ul className="space-y-1">
-            <li>Phase 1（測試中）</li>
+            <li>v0.3 ─ Closed Beta (封閉測試版)</li>
+            <li>新增：家族 LINE 群組推播、特種個資同意機制</li>
             <li>支援離線使用、PWA 可加到主畫面</li>
           </ul>
         </Section>
@@ -68,14 +71,82 @@ export default function AboutPage() {
           <p className="mb-2">資料只存在你這支手機。為避免 iOS／瀏覽器清除，請定期備份：</p>
           <Link
             href="/backup"
-            className="inline-block px-4 h-11 leading-[2.75rem] bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl font-semibold"
+            className="inline-block px-4 h-11 leading-[2.75rem] bg-blue-600 active:bg-blue-700 text-white rounded-xl font-semibold"
           >
             前往備份頁
           </Link>
         </Section>
 
-        <Section title="📮 回報問題">
-          <p>用得不順、找不到功能、內容不正確，都歡迎回報給開發者修正。</p>
+        <Section title="📮 客服與意見回報">
+          <p className="mb-3">
+            個資權利行使（查詢、更正、刪除）、bug 回報、功能建議，
+            請透過下列任一管道聯繫，我們會在 15 個工作日內回應。
+          </p>
+          <div className="space-y-3 text-sm">
+            <a
+              href="mailto:caretaiwan.app@gmail.com"
+              className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950 active:bg-blue-100 dark:active:bg-blue-900 rounded-xl border border-blue-200 dark:border-blue-800"
+            >
+              <span className="text-2xl">📧</span>
+              <div className="flex-1">
+                <div className="font-semibold text-blue-900 dark:text-blue-100">
+                  寄信給客服
+                </div>
+                <div className="text-xs text-blue-700 dark:text-blue-300 break-all">
+                  caretaiwan.app@gmail.com
+                </div>
+              </div>
+            </a>
+            <a
+              href="https://line.me/R/ti/p/@273kvcru"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-950 active:bg-emerald-100 dark:active:bg-emerald-900 rounded-xl border border-emerald-200 dark:border-emerald-800"
+            >
+              <span className="text-2xl">💬</span>
+              <div className="flex-1">
+                <div className="font-semibold text-emerald-900 dark:text-emerald-100">
+                  LINE 真人客服
+                </div>
+                <div className="text-xs text-emerald-700 dark:text-emerald-300">
+                  點此加入好友並開始諮詢 (@273kvcru)
+                </div>
+              </div>
+              <span className="text-emerald-600 dark:text-emerald-400 text-xl">›</span>
+            </a>
+          </div>
+        </Section>
+
+        <Section title="🔄 切換身分">
+          <p className="mb-3">你目前是哪一邊？切換後會回到對應首頁。</p>
+          <RoleSwitcher />
+        </Section>
+
+        <Section title="📖 使用教學">
+          <p className="mb-2">5 個主要功能怎麼用：</p>
+          <Link
+            href="/tutorial"
+            className="inline-block px-4 h-11 leading-[2.75rem] bg-blue-600 active:bg-blue-700 text-white rounded-xl font-semibold"
+          >
+            前往教學總覽 →
+          </Link>
+        </Section>
+
+        <Section title="📜 條款與政策">
+          <div className="flex flex-col gap-2">
+            <Link
+              href="/privacy"
+              className="text-blue-600 dark:text-blue-400 underline"
+            >
+              隱私權政策
+            </Link>
+            <Link
+              href="/terms"
+              className="text-blue-600 dark:text-blue-400 underline"
+            >
+              服務條款
+            </Link>
+          </div>
         </Section>
       </div>
     </main>
@@ -93,16 +164,16 @@ function Section({
 }) {
   return (
     <section
-      className={`p-4 rounded-2xl ${
+      className={`p-4 rounded-2xl shadow-card ${
         emphasis
-          ? "bg-amber-50 dark:bg-amber-950 border-2 border-amber-300 dark:border-amber-800"
-          : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
+          ? "bg-amber-50 dark:bg-amber-950 ring-1 ring-amber-300/60 dark:ring-amber-800"
+          : "bg-white dark:bg-slate-900"
       }`}
     >
-      <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+      <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2">
         {title}
       </h2>
-      <div className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+      <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
         {children}
       </div>
     </section>
