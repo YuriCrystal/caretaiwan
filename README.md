@@ -289,7 +289,22 @@ UI inspiration: medical app dribbble references (saved separately, not included 
 
 ## License & Use
 
-Code: MIT. Sample data and screenshots are illustrative, not real patient information.
+**Code: [GNU AGPL-3.0](./LICENSE).** Copyright © GUOPEICHI (YuriCrystal).
+
+You're free to use, study, modify, and share this code under the AGPL. The key
+condition: if you run a modified version as a network service (e.g. host it as a
+SaaS), you must make your modified source available to its users. This keeps
+derivatives open instead of being quietly absorbed into a closed product.
+
+The AGPL binds *others*, not the copyright holder. As the author, I retain the
+right to license this code separately — including under a commercial/proprietary
+license — at my sole discretion.
+
+**Contributing:** external contributions are welcome but require agreeing to the
+[Contributor License Agreement](./CLA.md) before being merged, so the project
+can keep its dual-licensing option open.
+
+Sample data and screenshots are illustrative, not real patient information.
 
 If you're an NGO or healthcare organization that could carry this forward responsibly — please reach out. I'd rather hand it to people with the institutional capacity to do compliance properly than have it fade as a portfolio piece.
 
