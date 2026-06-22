@@ -2,11 +2,22 @@
 
 **A long-term care PWA for foreign migrant caregivers in Taiwan, with a companion family-side LINE Bot for real-time updates.**
 
-> Status: **Portfolio / friend-testing phase**. Not a production service. Medical content is AI-drafted and pending healthcare professional review.
+> [!IMPORTANT]
+> ## 🗄️ Archived & open-sourced (June 2026)
+>
+> This started as a solo side-project that ran at `caretaiwan.app`. **The live service has been shut down** — as a part-time solo maintainer I couldn't sustain the ongoing operational and compliance load (security patching, PDPA / 個資法 compliance, user support). It was still in friend-testing, so **no real user data was affected**.
+>
+> The source is released under **AGPL-3.0** as a reference implementation and a portfolio piece — read it, learn from it, self-host it. **It is no longer maintained and comes with no support.** The `caretaiwan.app` domain will be allowed to lapse and will stop resolving.
 
-🔗 **Live demo**: <https://caregiver-app-ten.vercel.app>
+> [!IMPORTANT]
+> ## 🗄️ 已封存並開源（2026 年 6 月）
+>
+> 這原本是我一個人利用業餘時間獨立開發的專案，曾運行於 `caretaiwan.app`。**線上服務已停止營運**——身為半職、獨自維護的開發者，我無法長期負擔持續的營運與合規成本（安全性修補、個資法／PDPA 遵循、使用者支援）。專案當時仍在朋友測試階段，**沒有任何真實使用者的資料受到影響**。
+>
+> 原始碼以 **AGPL-3.0** 授權開源，作為一份參考實作與作品集——歡迎閱讀、學習，或自行部署。**本專案已不再維護，亦不提供任何技術支援。** `caretaiwan.app` 網域將不再續約，到期後失效。
+
 📄 **Security audit**: [SECURITY_AUDIT.md](./SECURITY_AUDIT.md)
-📅 **Built**: 2026-04 / Solo, ~1 week elapsed
+📅 **Built**: 2026-04 / Solo, ~1 week elapsed · **Archived**: 2026-06
 
 ---
 
