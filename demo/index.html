@@ -211,7 +211,7 @@ button{font-family:inherit;cursor:pointer}
 .tabbar{position:absolute;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);box-shadow:var(--nav-sh);display:flex;align-items:center;justify-content:space-around;padding:9px 10px 22px;z-index:40}
 .tab{flex:0 1 auto;border:0;background:none;display:flex;align-items:center;gap:7px;color:var(--muted);padding:9px 11px;border-radius:999px;font-size:13px;font-weight:700}
 .tab .e{font-size:20px}
-.tab span{display:none}
+.tab span:not(.e){display:none}
 .tab.on{background:var(--accent);color:#fff;padding:9px 16px}
 .tab.on span{display:inline}
 .fam .tab.on{background:var(--fam-accent)}
@@ -249,6 +249,17 @@ button{font-family:inherit;cursor:pointer}
 .w-btn{background:#fff;color:var(--accent);border:0;border-radius:16px;padding:16px;font-size:16px;font-weight:800;width:100%}
 .w-note{font-size:10.5px;color:rgba(255,255,255,.72);text-align:center;margin-top:16px;line-height:1.6}
 
+.backbtn{background:rgba(255,255,255,.2);border:0;color:#fff;font-size:13px;font-weight:700;padding:7px 13px;border-radius:999px}
+.enc{display:flex;gap:11px;align-items:flex-start;background:var(--info-bg);border:1px solid #cfe0fd;border-radius:16px;padding:14px;margin-top:14px;color:var(--accent-deep)}
+.enc b{font-size:13px;font-weight:700}.enc p{font-size:11.5px;color:#3b5bb5;margin-top:3px;line-height:1.55}
+.ecall{display:flex;align-items:center;gap:13px;width:100%;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:10px;box-shadow:var(--sh-sm)}
+.ecall:active{transform:scale(.98)}
+.ecall .ec-ic{width:46px;height:46px;border-radius:14px;background:var(--bad-bg);color:var(--bad-tx);display:flex;align-items:center;justify-content:center;flex:none}
+.ecall .ec-n{font-size:15px;font-weight:700}.ecall .ec-d{font-size:11.5px;color:var(--muted);margin-top:1px}
+.ecall .ec-p{font-family:var(--display);font-size:16px;font-weight:800;color:var(--bad-tx);flex:none}
+.ecall.big{background:linear-gradient(135deg,#fff,#fdecec);border-color:#f6cccc}
+.ecall.big .ec-ic{background:var(--bad-tx);color:#fff;width:54px;height:54px}
+.ecall.big .ec-n{font-size:18px}.ecall.big .ec-p{font-size:22px}
 @media(max-width:430px){
   .stage{padding:0}
   .lead{display:none}
@@ -326,25 +337,25 @@ var L = {
     t3:'3 秒記錄', t3s:'點一下就完成', tcard:'醫護卡', tcards:'用藥 · 過敏 · 聯絡',
     tbak:'雲端備份', tbaks:'換手機不怕丟', thelp:'緊急協助', thelps:'一鍵撥打',
     recent:'最近記錄', add:'記一筆', tabs:['首頁','記錄','醫護卡','記帳'],
-    famTabs:['LINE 推播','醫護卡','核帳'], shareTag:'已傳家屬', grpTag:'家族群組'},
+    famTabs:['LINE 推播','健康趨勢','醫護卡','核帳'], shareTag:'已傳家屬', grpTag:'家族群組'},
   vi:{code:'VI', name:'Tiếng Việt', care:'Người chăm', fam:'Gia đình',
     homeSub:'Đang chăm · Bà Trần', greet:'Chào May, vất vả rồi 👋', greetSub:'Đã chăm bà Trần 142 ngày',
     today:'Hôm nay {n} ghi chú', todaySub:'{n} đã gửi gia đình', quick:'Chức năng nhanh',
     t3:'Ghi 3 giây', t3s:'Một chạm là xong', tcard:'Thẻ y tế', tcards:'Thuốc · Dị ứng · Liên lạc',
     tbak:'Sao lưu', tbaks:'Đổi máy không lo', thelp:'Khẩn cấp', thelps:'Gọi một chạm',
     recent:'Ghi chú gần đây', add:'Ghi mới', tabs:['Trang chủ','Ghi','Thẻ y tế','Chi tiêu'],
-    famTabs:['LINE','Thẻ y tế','Duyệt'], shareTag:'Đã gửi', grpTag:'Nhóm GĐ'},
+    famTabs:['LINE','Xu hướng','Thẻ y tế','Duyệt'], shareTag:'Đã gửi', grpTag:'Nhóm GĐ'},
   id:{code:'ID', name:'Bahasa', care:'Perawat', fam:'Keluarga',
     homeSub:'Merawat · Nenek Chen', greet:'Halo May, kerja bagus 👋', greetSub:'Sudah 142 hari merawat',
     today:'Hari ini {n} catatan', todaySub:'{n} dikirim ke keluarga', quick:'Fungsi cepat',
     t3:'Catat 3 detik', t3s:'Sekali ketuk', tcard:'Kartu medis', tcards:'Obat · Alergi · Kontak',
     tbak:'Cadangkan', tbaks:'Ganti HP aman', thelp:'Darurat', thelps:'Telepon cepat',
     recent:'Catatan terbaru', add:'Catat', tabs:['Beranda','Catat','Kartu','Biaya'],
-    famTabs:['LINE','Kartu','Verifikasi'], shareTag:'Terkirim', grpTag:'Grup'}
+    famTabs:['LINE','Tren','Kartu','Verifikasi'], shareTag:'Terkirim', grpTag:'Grup'}
 };
 
 /* ---------- state ---------- */
-var S = {welcome:true, role:'care', tab:0, lang:'zh', sheet:null, toast:null, kp:null};
+var S = {welcome:true, role:'care', tab:0, page:null, lang:'zh', sheet:null, toast:null, kp:null};
 var feed = DATA.feed.slice();
 var expenses = DATA.expenses.map(function(e){return Object.assign({},e);});
 var todayN = 5, todayShared = 3;
@@ -410,6 +421,8 @@ function heroHead(fam){
 
 /* ===== caregiver screens ===== */
 function careScreen(){
+  if(S.page==='backup') return careBackup();
+  if(S.page==='emergency') return careEmergency();
   if(S.tab===0) return careHome();
   if(S.tab===1) return careRecord();
   if(S.tab===2) return careCard();
@@ -502,10 +515,84 @@ function expRow(e,fam){
     +'<div class="amt"><b>$'+e.amt+'</b><br>'+st+'</div></div>';
 }
 
+/* ===== caregiver sub-pages ===== */
+function subHeader(icon,title,sub){
+  return '<div class="hero care" style="padding:54px 18px 22px;border-radius:0 0 26px 26px">'
+    +'<button class="backbtn" data-act="back">‹ 返回</button>'
+    +'<div style="display:flex;align-items:center;gap:11px;margin-top:14px"><div class="brand-logo">'+icon+'</div>'
+    +'<div><div style="font-size:19px;font-weight:800;font-family:var(--display)">'+title+'</div><div style="font-size:12px;color:rgba(255,255,255,.82)">'+sub+'</div></div></div></div>';
+}
+function careBackup(){
+  var h = subHeader(ic('cloud',20),'雲端備份','換手機也不怕記錄丟');
+  h += '<div class="float"><div class="lift" style="padding:15px;display:flex;align-items:center;gap:13px">'
+    +'<div style="width:46px;height:46px;border-radius:50%;background:#06c755;display:flex;align-items:center;justify-content:center;font-size:22px;flex:none">👩</div>'
+    +'<div style="flex:1;min-width:0"><div style="font-weight:700">阿May</div><div style="font-size:12px;color:var(--muted)">已用 LINE 登入備份</div></div>'
+    +'<span class="st confirmed">已連線</span></div></div>';
+  h += '<div class="sect"><div class="lift" style="padding:2px 16px">'
+    + kvRow('上次備份','今天 09:30 · 自動每日')
+    + kvRow('已備份記錄','1,284 筆')
+    + '<div class="kv-row"><div class="kv-k">加密方式</div><div class="kv-v" style="color:var(--ok-tx)">🔒 AES-GCM 256</div></div></div>';
+  h += '<div class="enc">'+ic('shield',18)+'<div><b>端對端加密</b><p>備份用你的 LINE 帳號鎖定、AES-256 加密儲存——就算是開發者，也解不開你的資料。</p></div></div>';
+  h += '<button class="cta" data-act="dobackup">立即備份</button>';
+  h += '<button class="ghost" data-act="restore">從雲端還原到新手機</button></div>';
+  return h;
+}
+function careEmergency(){
+  var h = subHeader('🆘','緊急協助','一鍵撥打 · 號碼皆為公開資訊');
+  var calls=[
+    {n:'消防／救護車',p:'119',d:'送醫、急救',big:true},
+    {n:'報警',p:'110',d:'人身安全'},
+    {n:'1955 勞工專線',p:'1955',d:'24 小時 · 越印泰英通譯'},
+    {n:'王小姐（家屬）',p:'0912-345-678',d:'主要家屬'},
+    {n:'李醫師（家醫科）',p:'02-2345-6789',d:'陳阿嬤主治'}
+  ];
+  h += '<div class="sect">';
+  calls.forEach(function(c){
+    h += '<button class="ecall '+(c.big?'big':'')+'" data-act="call"><div class="ec-ic">'+ic('phone',c.big?24:19)+'</div>'
+      +'<div style="flex:1;min-width:0;text-align:left"><div class="ec-n">'+c.n+'</div><div class="ec-d">'+c.d+'</div></div><div class="ec-p">'+c.p+'</div></button>';
+  });
+  h += '<div class="subhint">'+ic('info',15)+'<span>緊急時這頁不用思考，按下去就撥。1955 提供越南／印尼／泰／英語即時通譯，看護自己也能求助。</span></div></div>';
+  return h;
+}
+
+/* ===== family trends ===== */
+function famTrends(){
+  var h = '<div class="hero fam" style="padding-bottom:22px">'+roleseg()
+    +'<div class="hero-top"><div class="brand"><div class="brand-logo">📈</div><div class="brand-tt"><b>健康趨勢</b><span>家屬端 · 近 7 日</span></div></div>'
+    +'<button class="hbtn lang" data-act="lang"><b>'+t().code+'</b>'+ic('globe',15)+'</button></div></div>';
+  h += '<div class="float">'+trendCard('🌡️ 體溫','°C',[36.6,36.8,37.2,36.9,37.0,37.4,37.1],36,38,'#ea580c','平穩，最高 37.4°C')+'</div>';
+  h += '<div class="sect" style="padding-top:14px">'+trendCard('🫀 血壓（收縮壓）','mmHg',[132,138,141,135,139,142,138],110,160,'#e11d48','略偏高，建議回診追蹤')+'</div>';
+  h += '<div class="sect" style="padding-top:14px">'+trendCard('🩸 血糖','mg/dL',[108,126,115,132,119,121,110],80,180,'#b91c1c','飯後偶高，整體可控')+'</div>';
+  h += '<div class="sect"><div class="subhint">'+ic('info',15)+'<span>看護每天記的數值，在這裡自動長成趨勢圖。異常一眼看出，回診時直接給醫師看。</span></div></div>';
+  return h;
+}
+function trendCard(title,unit,vals,min,max,color,note){
+  var last=vals[vals.length-1];
+  return '<div class="lift" style="padding:15px 16px"><div style="display:flex;align-items:baseline;justify-content:space-between">'
+    +'<div style="font-size:14px;font-weight:700">'+title+'</div>'
+    +'<div style="font-family:var(--display);font-size:20px;font-weight:800;color:'+color+'">'+last+'<span style="font-size:11px;color:var(--muted);font-weight:400"> '+unit+'</span></div></div>'
+    +sparkline(vals,min,max,color)
+    +'<div style="font-size:11.5px;color:var(--muted);margin-top:8px">'+note+'</div></div>';
+}
+function sparkline(vals,min,max,color){
+  var W=300,H=64,n=vals.length,pad=5;
+  var pts=vals.map(function(v,i){var x=pad+(W-2*pad)*i/(n-1);var y=H-pad-(H-2*pad)*(v-min)/(max-min);return [x,y];});
+  var poly=pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' ');
+  var area='M'+pad+','+H+' ';
+  pts.forEach(function(p){area+='L'+p[0].toFixed(1)+','+p[1].toFixed(1)+' ';});
+  area+='L'+(W-pad)+','+H+' Z';
+  var dots=pts.map(function(p){return '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3" fill="'+color+'"/>';}).join('');
+  var gid='grad'+Math.round(min)+'x'+Math.round(max);
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:64px;margin-top:10px;display:block"><defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color+'" stop-opacity=".22"/><stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'
+    +'<path d="'+area+'" fill="url(#'+gid+')"/>'
+    +'<polyline points="'+poly+'" fill="none" stroke="'+color+'" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'</svg>';
+}
+
 /* ===== family screens ===== */
 function famScreen(){
   if(S.tab===0) return famFeed();
-  if(S.tab===1) return famCard();
+  if(S.tab===1) return famTrends();
+  if(S.tab===2) return famCard();
   return famVerify();
 }
 function famFeed(){
@@ -522,7 +609,7 @@ function famFeed(){
 }
 function bubble(m){
   var av = m.k==='expense' ? '💰' : (TYPE[m.k]?TYPE[m.k].e:'📋');
-  var act = m.act==='expense' ? '<button class="actbtn" data-act="tab" data-v="2">前往核帳 →</button>' : '';
+  var act = m.act==='expense' ? '<button class="actbtn" data-act="tab" data-v="3">前往核帳 →</button>' : '';
   return '<div class="bub"><div class="av"><span class="emoji">'+av+'</span></div>'
     +'<div class="body"><div class="name">看護助手</div><div class="msg'+(m.act?' act':'')+'"><span class="big">'+m.big+'</span>'
     +(m.sub?'<span class="sub">'+m.sub+'</span>':'')+act+'</div></div><div class="tm">'+m.t+'</div></div>';
@@ -560,7 +647,7 @@ function famVerify(){
 /* ===== tab bar ===== */
 function tabbar(){
   var tabs = S.role==='fam' ? t().famTabs : t().tabs;
-  var es = S.role==='fam' ? ['💬','🪪','✅'] : ['🏠','📝','🪪','💰'];
+  var es = S.role==='fam' ? ['💬','📈','🪪','✅'] : ['🏠','📝','🪪','💰'];
   var h='<div class="tabbar">';
   tabs.forEach(function(lab,i){
     h += '<button class="tab '+(S.tab===i?'on':'')+'" data-act="tab" data-v="'+i+'"><span class="e emoji">'+es[i]+'</span><span>'+lab+'</span></button>';
@@ -667,14 +754,14 @@ function bind(){
     if(a==='close' && ev.target.closest('[data-stop]') && !ev.target.closest('[data-act="close"]')) return;
     switch(a){
       case 'enter': S.welcome=false; render(); break;
-      case 'role': S.role=v; S.tab=0; S.sheet=null; render(); break;
+      case 'role': S.role=v; S.tab=0; S.page=null; S.sheet=null; render(); break;
       case 'lang': S.lang = S.lang==='zh'?'vi':S.lang==='vi'?'id':'zh'; render(); break;
-      case 'tab': S.tab=parseInt(v,10); S.sheet=null; render(); break;
+      case 'tab': S.tab=parseInt(v,10); S.page=null; S.sheet=null; render(); break;
       case 'tile':
         if(v==='1'){ S.tab=1; render(); }
         else if(v==='2'){ S.tab=2; render(); }
-        else if(v==='bak'){ toast('☁️ 已備份到雲端（示意）'); }
-        else if(v==='help'){ S.tab=2; render(); }
+        else if(v==='bak'){ S.page='backup'; render(); }
+        else if(v==='help'){ S.page='emergency'; render(); }
         break;
       case 'bell': toast('🔔 沒有新通知'); break;
       case 'call': toast('📞 撥號中…（示意，不會真的撥出）'); break;
@@ -688,6 +775,9 @@ function bind(){
       case 'verify': doVerify(parseInt(el.getAttribute('data-i'),10), v); break;
       case 'addexp': S.sheet={type:'addexp'}; render(); break;
       case 'demoexp': addDemoExp(); break;
+      case 'back': S.page=null; render(); break;
+      case 'dobackup': toast('☁️ 已加密備份到雲端（示意）'); break;
+      case 'restore': toast('📥 已從雲端還原 1,284 筆記錄（示意）'); break;
       case 'close': S.sheet=null; render(); break;
     }
   };
