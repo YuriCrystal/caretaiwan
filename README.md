@@ -2,6 +2,8 @@
 
 **A long-term care PWA for foreign migrant caregivers in Taiwan, with a companion family-side LINE Bot for real-time updates.**
 
+🌐 **English** ｜ [繁體中文](./README.zh-TW.md)
+
 > [!IMPORTANT]
 > ## 🗄️ Archived & open-sourced (June 2026)
 >
