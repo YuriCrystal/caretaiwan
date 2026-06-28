@@ -20,7 +20,7 @@
 
 📄 **Security audit**: [SECURITY_AUDIT.md](./SECURITY_AUDIT.md)
 📅 **Built**: 2026-04 / Solo, ~1 week elapsed · **Archived**: 2026-06
-🎮 **Interactive demo**: a self-contained, click-through prototype (mock data, no backend) lives in [`/demo`](./demo). The hosted app is gone — this shows how it worked, both caregiver and family sides. Enable **GitHub Pages** (Settings → Pages → `main` / root) and it goes live at `https://yuricrystal.github.io/caretaiwan/demo/`.
+🎮 **Live demo**: **<https://caretaiwan-demo.vercel.app>** — a self-contained, click-through prototype (mock data, no backend) showing both the caregiver and family sides. The hosted app is gone; this is how it worked. Source in [`/demo`](./demo).
 
 ---
 

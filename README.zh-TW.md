@@ -13,7 +13,7 @@
 
 📄 **資安稽核**：[SECURITY_AUDIT.md](./SECURITY_AUDIT.md)
 📅 **開發**：2026-04 ／ 獨自一人、約 1 週 · **封存**：2026-06
-🎮 **互動 demo**：一個自帶資料、可點擊的單檔原型（示意資料、零後端）放在 [`/demo`](./demo)。線上服務已下線，這個 demo 讓你看到它原本運作的樣子（看護端與家屬端）。開啟 **GitHub Pages**（Settings → Pages → `main` ／ root）後，會上線於 `https://yuricrystal.github.io/caretaiwan/demo/`。
+🎮 **線上 demo**：**<https://caretaiwan-demo.vercel.app>** —— 一個自帶資料、可點擊的單檔原型（示意資料、零後端），呈現看護端與家屬端。線上服務已下線，這個 demo 就是它原本運作的樣子。原始碼在 [`/demo`](./demo)。
 
 ---
 
