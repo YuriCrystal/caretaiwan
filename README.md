@@ -9,7 +9,7 @@
 >
 > This started as a solo side-project that ran at `caretaiwan.app`. **The live service has been shut down** — as a part-time solo maintainer I couldn't sustain the ongoing operational and compliance load (security patching, PDPA / 個資法 compliance, user support). It was still in friend-testing, so **no real user data was affected**.
 >
-> The source is released under **AGPL-3.0** as a reference implementation and a portfolio piece — read it, learn from it, self-host it. **It is no longer maintained and comes with no support.** The `caretaiwan.app` domain will be allowed to lapse and will stop resolving.
+> The source is released under the **MIT license** as a reference implementation and a portfolio piece — read it, learn from it, self-host it. **It is no longer maintained and comes with no support.** The `caretaiwan.app` domain will be allowed to lapse and will stop resolving.
 
 > [!IMPORTANT]
 > ## 🗄️ 已封存並開源（2026 年 6 月）
@@ -303,20 +303,12 @@ UI inspiration: medical app dribbble references (saved separately, not included 
 
 ## License & Use
 
-**Code: [GNU AGPL-3.0](./LICENSE).** Copyright © GUOPEICHI (YuriCrystal).
+**Code: [MIT](./LICENSE).** Copyright © 2026 GUOPEICHI (YuriCrystal).
 
-You're free to use, study, modify, and share this code under the AGPL. The key
-condition: if you run a modified version as a network service (e.g. host it as a
-SaaS), you must make your modified source available to its users. This keeps
-derivatives open instead of being quietly absorbed into a closed product.
+Use it, study it, modify it, ship it — commercial or not — just keep the
+copyright notice. No strings attached.
 
-The AGPL binds *others*, not the copyright holder. As the author, I retain the
-right to license this code separately — including under a commercial/proprietary
-license — at my sole discretion.
-
-**Contributing:** external contributions are welcome but require agreeing to the
-[Contributor License Agreement](./CLA.md) before being merged, so the project
-can keep its dual-licensing option open.
+**Contributing:** PRs welcome; contributions are accepted under the same MIT license.
 
 Sample data and screenshots are illustrative, not real patient information.
 
