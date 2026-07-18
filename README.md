@@ -20,7 +20,7 @@
 
 📄 **Security audit**: [SECURITY_AUDIT.md](./SECURITY_AUDIT.md)
 📅 **Built**: 2026-04 / Solo, ~1 week elapsed · **Archived**: 2026-06
-🎮 **Live demo**: **<https://caretaiwan-demo.vercel.app>** — a self-contained, click-through prototype (mock data, no backend) showing both the caregiver and family sides. The hosted app is gone; this is how it worked. Source in [`/demo`](./demo).
+🎮 **Live demo**: **<https://caretaiwan-demo-yuri.lisarock278496.chatgpt.site>** — a self-contained, click-through prototype (mock data, no backend) showing both the caregiver and family sides. Source and local instructions are in [`/demo`](./demo).
 
 ---
 

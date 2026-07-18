@@ -13,7 +13,7 @@
 
 📄 **資安稽核**：[SECURITY_AUDIT.md](./SECURITY_AUDIT.md)
 📅 **開發**：2026-04 ／ 獨自一人、約 1 週 · **封存**：2026-06
-🎮 **線上 demo**：**<https://caretaiwan-demo.vercel.app>** —— 一個自帶資料、可點擊的單檔原型（示意資料、零後端），呈現看護端與家屬端。線上服務已下線，這個 demo 就是它原本運作的樣子。原始碼在 [`/demo`](./demo)。
+🎮 **線上 demo**：**<https://caretaiwan-demo-yuri.lisarock278496.chatgpt.site>** —— 一個自帶資料、可點擊的單檔原型（示意資料、零後端），呈現看護端與家屬端。原始碼與本機開啟方式在 [`/demo`](./demo)。
 
 ---
 
